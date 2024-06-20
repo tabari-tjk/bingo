@@ -103,38 +103,38 @@ export default function Client({ roomId, token }: { "roomId": number | null, "to
   }, [events]);
 
   return (
-    <div>
-      あなたのプレイヤーIDは{player_id}です<br />
-      部屋IDは#{room_id}です<br />
-      {gameFinished ? <>
-        <button onClick={() => {
-          fetch(API_SERVER + "api/client_leavegame.php", {
-            method: "POST",
-            credentials: 'include',
-            headers: {
-              'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({ token: token }),
-          })
-            .then(() => window.location.reload());
-        }}>トップへ戻る</button>
-      </> : <></>}
-      <div className="bingocard-head">
-          <div className="bingocard-head-cell">B</div>
-          <div className="bingocard-head-cell">I</div>
-          <div className="bingocard-head-cell">N</div>
-          <div className="bingocard-head-cell">G</div>
-          <div className="bingocard-head-cell">O</div>
-      </div>
-      {board !== null ? [...Array(5).keys()].map((x, i) => {
-        return <div key={i} className="bingocard-row">
-          {[...Array(5).keys()].map((y, i) => {
+    <div id="client">
+      <div id="bingocard">
+        <div className="bingocard-head-cell">B</div>
+        <div className="bingocard-head-cell">I</div>
+        <div className="bingocard-head-cell">N</div>
+        <div className="bingocard-head-cell">G</div>
+        <div className="bingocard-head-cell">O</div>
+        {board !== null ? [...Array(5).keys()].map((x, i) => {
+          return [...Array(5).keys()].map((y, i) => {
             const pos = y * 5 + x;
             return <div key={i} className={`bingocard-cell ${board[pos] < 1 ? "hit" : ""}`}>{board[pos] == 0 ? "FREE" : Math.abs(board[pos])}</div>;
-          })}
-        </div>;
-      })
-        : <></>}
+          });
+        })
+          : <></>}
+      </div>
+      <div id="info">
+        あなたのプレイヤーIDは{player_id}です<br />
+        部屋IDは#{room_id}です<br />
+        {gameFinished ? <>
+          <button onClick={() => {
+            fetch(API_SERVER + "api/client_leavegame.php", {
+              method: "POST",
+              credentials: 'include',
+              headers: {
+                'Content-Type': 'application/json'
+              },
+              body: JSON.stringify({ token: token }),
+            })
+              .then(() => window.location.reload());
+          }}>トップへ戻る</button>
+        </> : <></>}
+      </div>
       <MessageList messages={messages} />
     </div>
   );
@@ -142,6 +142,6 @@ export default function Client({ roomId, token }: { "roomId": number | null, "to
 
 function MessageList({ messages }: { "messages": string[] }) {
   return (<ul>
-    {messages.map((e, i) => [e, i]).reverse().slice(0, 100).map(e => <li key={e[1]} className='fadeIn'>{e[0]}</li>)}
+    {messages.map((e, i) => [e, i]).reverse().slice(0, 100).map(e => <li key={e[1]} className='fadeIn message'>{e[0]}</li>)}
   </ul>);
 }

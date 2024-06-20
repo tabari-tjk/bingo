@@ -1,21 +1,37 @@
 @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400..900&display=swap');
 
-.bingocard {
-    display: table;
+@media screen and (orientation: portrait) {
+    #client {
+        width: 100vw;
+        min-width: 50vw;
+    }
+
+    #bingocard {
+        grid-template-columns: repeat(5, minmax(min(64px, 100%), 1fr));
+    }
 }
 
-.bingocard-row {
-    display: table-row;
+@media screen and (orientation: landscape) {
+    #bingocard {
+        grid-template-columns: repeat(5, minmax(128px, 1fr));
+    }
 }
 
-.bingocard-head {
-    display: table-header-group;
+#client {
+    display: flex;
+    justify-content: center;
+    flex-direction: column;
+}
+
+#bingocard {
+    display: grid;
+    grid-auto-rows: minmax(64px, auto);
 }
 
 .bingocard-head-cell {
-    display: table-cell;
-    text-align: center;
-    vertical-align: middle;
+    display: grid;
+    justify-items: center;
+    align-content: center;
 
     font-family: "Orbitron", sans-serif;
     font-optical-sizing: auto;
@@ -25,15 +41,19 @@
 }
 
 .bingocard-cell {
+    display: grid;
+    justify-items: center;
+    align-content: center;
     border: 1px dotted;
-    display: table-cell;
-    padding: 1em;
     text-align: center;
-    width: 2em;
-    height: 2em;
     vertical-align: middle;
 }
 
 .bingocard-cell.hit {
     background-color: aquamarine;
+}
+
+.message {
+    max-width: 600px;
+    overflow-wrap: break-word;
 }
