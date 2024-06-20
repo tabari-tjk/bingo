@@ -21,7 +21,7 @@ $retval["ready_players"] = [];
 $retval["win_players"] = [];
 $room_id = $db->get_user_room_id($token);
 $is_gm = $db->is_user_gm($token);
-if ($room_id !== null && $is_gm) {
+if ($room_id !== null && !$db->is_room_joinable($room_id) && $is_gm) {
     $result = $db->bingo_choose($room_id);
     if ($result !== null) {
         $retval["bingo_number"] = $result[0];
