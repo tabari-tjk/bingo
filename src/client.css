@@ -1,0 +1,21 @@
+.bingocard {
+    display: table;
+}
+
+.bingocard-row {
+    display: table-row;
+}
+
+.bingocard-cell {
+    border: 1px dotted;
+    display: table-cell;
+    padding: 1em;
+    text-align: center;
+    width: 2em;
+    height: 2em;
+    vertical-align: middle;
+}
+
+.bingocard-cell.hit {
+    background-color: aquamarine;
+}

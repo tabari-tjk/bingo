@@ -1,0 +1,11 @@
+version: '3.7'
+services:
+    web:
+        build: .
+        container_name: "bingo"
+        volumes:
+            - "./php:/var/www/html"
+        privileged: true
+        ports:
+            - "80:80"
+            
