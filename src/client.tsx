@@ -119,6 +119,13 @@ export default function Client({ roomId, token }: { "roomId": number | null, "to
             .then(() => window.location.reload());
         }}>トップへ戻る</button>
       </> : <></>}
+      <div className="bingocard-head">
+          <div className="bingocard-head-cell">B</div>
+          <div className="bingocard-head-cell">I</div>
+          <div className="bingocard-head-cell">N</div>
+          <div className="bingocard-head-cell">G</div>
+          <div className="bingocard-head-cell">O</div>
+      </div>
       {board !== null ? [...Array(5).keys()].map((x, i) => {
         return <div key={i} className="bingocard-row">
           {[...Array(5).keys()].map((y, i) => {

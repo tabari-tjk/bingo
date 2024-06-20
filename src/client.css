@@ -1,9 +1,27 @@
+@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400..900&display=swap');
+
 .bingocard {
     display: table;
 }
 
 .bingocard-row {
     display: table-row;
+}
+
+.bingocard-head {
+    display: table-header-group;
+}
+
+.bingocard-head-cell {
+    display: table-cell;
+    text-align: center;
+    vertical-align: middle;
+
+    font-family: "Orbitron", sans-serif;
+    font-optical-sizing: auto;
+    font-weight: 400;
+    font-style: normal;
+    font-size: xx-large;
 }
 
 .bingocard-cell {
