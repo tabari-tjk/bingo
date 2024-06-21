@@ -127,9 +127,21 @@ export default function Client({ roomId, token }: { "roomId": number | null, "to
     if (idx !== -1) {
       board[idx] = -choose;
       SetBoard([...board]);
+      setReadyClassName("");
+      setWinClassName("");
       //alert("hit: " + choose);
     }
   }, [events]);
+  
+  // ヒット・ビンゴの点滅演出同期用ステート
+  const [readyClassName, setReadyClassName] = useState("ready");
+  const [winClassName, setWinClassName] = useState("win");
+  if (readyClassName === "" || winClassName === "") {
+    requestAnimationFrame(() => {
+      setReadyClassName("ready");
+      setWinClassName("win");
+    });
+  }
 
   const boardAttr = board !== null ? boardToReadyWin(board) : [...Array(25).keys()].fill(0);
   return (
@@ -144,7 +156,7 @@ export default function Client({ roomId, token }: { "roomId": number | null, "to
           board !== null ? [...Array(5).keys()].map((x, i) => {
             return [...Array(5).keys()].map((y, i) => {
               const pos = y * 5 + x;
-              return <div key={i} className={`bingocard-cell ${(boardAttr[pos] & 2) != 0 ? "win" : (boardAttr[pos] & 1) != 0 ? "ready" : board[pos] < 1 ? "hit" : ""}`}>{board[pos] == 0 ? "FREE" : Math.abs(board[pos])}</div>;
+              return <div key={i} className={`bingocard-cell ${(boardAttr[pos] & 2) != 0 ? winClassName : (boardAttr[pos] & 1) != 0 ? readyClassName : board[pos] < 1 ? "hit" : ""}`}>{board[pos] == 0 ? "FREE" : Math.abs(board[pos])}</div>;
             });
           })
             : <></>}
@@ -175,4 +187,9 @@ function MessageList({ messages }: { "messages": string[] }) {
   return (<ul>
     {messages.map((e, i) => [e, i]).reverse().slice(0, 100).map(e => <li key={e[1]} className='fadeIn message'>{e[0]}</li>)}
   </ul>);
+}
+
+interface HitEffect {
+  draw(): React.JSX.Element;
+  finished(): boolean;
 }

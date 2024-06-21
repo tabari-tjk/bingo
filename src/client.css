@@ -57,14 +57,41 @@
 .bingocard-cell.hit {
     background-color: aquamarine;
     color: black;
+    animation: hiteffect 1s 1;
 }
+
 .bingocard-cell.ready {
     background-color: yellowgreen;
     color: black;
+    animation: flashing 1s infinite;
 }
+
 .bingocard-cell.win {
     background-color: red;
     color: white;
+    animation: flashing 1s infinite;
+}
+
+@keyframes hiteffect {
+    0% {
+        background-color: rgba(0, 0, 0, 0);
+    }
+
+    50% {
+        background-color: rgba(255, 255, 255, 1);
+    }
+
+    100% {}
+}
+
+@keyframes flashing {
+    0% {}
+
+    50% {
+        background-color: rgba(255, 255, 255, 1);
+    }
+
+    100% {}
 }
 
 .message {
