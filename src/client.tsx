@@ -2,6 +2,35 @@ import React, { useEffect, useState } from "react";
 import { API_SERVER } from "./globals.tsx";
 import "./client.css";
 
+const linefuncs: ((i: number) => boolean)[] = [
+  i => i % 5 == 0,
+  i => i % 5 == 1,
+  i => i % 5 == 2,
+  i => i % 5 == 3,
+  i => i % 5 == 4,
+  i => Math.floor(i / 5) == 0,
+  i => Math.floor(i / 5) == 1,
+  i => Math.floor(i / 5) == 2,
+  i => Math.floor(i / 5) == 3,
+  i => Math.floor(i / 5) == 4,
+  i => i % 6 == 0,
+  i => i % 4 == 0 && i != 0 && i != 24,
+];
+function boardToReadyWin(board: number[]) {
+  const result = [...Array(25).keys()].fill(0);
+  const lines = linefuncs.map(f => board.map((e, i) => [e, i]).filter((_, i) => f(i)));
+  lines.forEach(line => {
+    const hit_cnt = line.filter(e => e[0] < 1).length;
+    if (hit_cnt === 4) {
+      line.forEach(i => { if (board[i[1]] < 1) { result[i[1]] |= 1 } });
+    }
+    if (hit_cnt === 5) {
+      line.forEach(i => result[i[1]] |= 2);
+    }
+  });
+  return result;
+}
+
 export default function Client({ roomId, token }: { "roomId": number | null, "token": string }) {
   const [room_id, setRoomId] = useState<number | null>(roomId);
   const [player_id, setPlayerId] = useState(null);
@@ -102,6 +131,7 @@ export default function Client({ roomId, token }: { "roomId": number | null, "to
     }
   }, [events]);
 
+  const boardAttr = board !== null ? boardToReadyWin(board) : [...Array(25).keys()].fill(0);
   return (
     <div id="client">
       <div id="bingocard">
@@ -110,13 +140,14 @@ export default function Client({ roomId, token }: { "roomId": number | null, "to
         <div className="bingocard-head-cell">N</div>
         <div className="bingocard-head-cell">G</div>
         <div className="bingocard-head-cell">O</div>
-        {board !== null ? [...Array(5).keys()].map((x, i) => {
-          return [...Array(5).keys()].map((y, i) => {
-            const pos = y * 5 + x;
-            return <div key={i} className={`bingocard-cell ${board[pos] < 1 ? "hit" : ""}`}>{board[pos] == 0 ? "FREE" : Math.abs(board[pos])}</div>;
-          });
-        })
-          : <></>}
+        {
+          board !== null ? [...Array(5).keys()].map((x, i) => {
+            return [...Array(5).keys()].map((y, i) => {
+              const pos = y * 5 + x;
+              return <div key={i} className={`bingocard-cell ${(boardAttr[pos] & 2) != 0 ? "win" : (boardAttr[pos] & 1) != 0 ? "ready" : board[pos] < 1 ? "hit" : ""}`}>{board[pos] == 0 ? "FREE" : Math.abs(board[pos])}</div>;
+            });
+          })
+            : <></>}
       </div>
       <div id="info">
         あなたのプレイヤーIDは{player_id}です<br />

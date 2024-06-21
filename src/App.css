@@ -1,6 +1,36 @@
 body {
     display: flex;
     justify-content: center;
+    background-color: black;
+    color: white;
+}
+
+body::after {
+    content: "";
+    background-image: url("../public/logo192.png");
+    position: fixed;
+    display: none;
+    background-size: contain;
+    background-position: center;
+    background-repeat: no-repeat;
+    top: 0px;
+    left: 0px;
+    width: 100vw;
+    height: 100vh;
+    animation: spin 10s infinite linear;
+    z-index: -1000;
+}
+
+@keyframes spin {
+    0% {
+        transform: rotateX(60deg) rotateZ(0deg);
+        filter: hue-rotate(0deg);
+    }
+
+    100% {
+        transform: rotateX(60deg) rotateZ(360deg);
+        filter: hue-rotate(360deg);
+    }
 }
 
 ul {
