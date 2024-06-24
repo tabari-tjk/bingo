@@ -14,6 +14,9 @@ class GameState {
 export default function Master({ token }: { token: string }) {
     const [gameState, setGameState] = useState<GameState>(new GameState());
     useEffect(() => {
+        if (gameState.room_id !== null) {
+            return;
+        }
         fetch("api/master_newgame.php", {
             method: "POST",
             credentials: 'include',
@@ -27,7 +30,7 @@ export default function Master({ token }: { token: string }) {
                 gameState.room_id = data;
                 setGameState({ ...gameState });
             });
-    }, []);
+    }, [gameState, token]);
     useEffect(() => {
         if (gameState.room_id === null) {
             return;
@@ -50,7 +53,7 @@ export default function Master({ token }: { token: string }) {
         return () => {
             clearInterval(id);
         };
-    }, [gameState.room_id]);
+    }, [gameState, token]);
 
     const [gameStarted, setGameStarted] = useState(false);
     const startGame = () => {

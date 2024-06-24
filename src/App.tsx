@@ -37,7 +37,7 @@ function App() {
           }
         }
       });
-  }, []);
+  }, [token]);
 
   useEffect(() => {
     const id = setInterval(() => {

@@ -1,4 +1,4 @@
-import React, { useRef, useState } from "react";
+import React, { useState } from "react";
 import Client from "./client.tsx";
 
 export default function DebugClient({ clientNum }: { clientNum: number }) {
