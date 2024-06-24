@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import "./client.css";
+import WakeLock from "./wakelock.tsx";
 
 const linefuncs: ((i: number) => boolean)[] = [
   i => i % 5 == 0,
@@ -190,6 +191,7 @@ export default function Client({ roomId, token, backCallback }: { "roomId": numb
         </> : <></>}
       </div>
       <MessageList messages={messages} />
+      <WakeLock />
     </div>
   );
 }

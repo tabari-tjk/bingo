@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import "./master.css";
 import Client from "./client.tsx";
+import WakeLock from "./wakelock.tsx";
 
 type RoomState = "Joinable" | "StartGame" | "Finished";
 
@@ -137,6 +138,7 @@ export default function Master({ token, backCallback }: { token: string, backCal
             {
                 //gameState.room_id !== null && <Client roomId={gameState.room_id} token={token} />
             }
+            <WakeLock />
         </div>
     );
 }
