@@ -65,15 +65,19 @@ function App() {
   return (
     <div className="App">
       {gameState == "TOP" && <>
-        <button onClick={() => setGameState("MASTER")}>new game</button>
-        <button onClick={() => setGameState("CLIENT")}>join game</button>
-        <button onClick={() => setGameState("DEBUG")}>debug client</button>
+        <div id='top_title'>ビンゴゲーム</div>
+        <div id="top_start_buttons">
+          <button onClick={() => setGameState("MASTER")} className={`top_button`}>部屋を作る</button>
+          <button onClick={() => setGameState("CLIENT")} className={`top_button`}>部屋に入る</button>
+          <button onClick={() => setGameState("DEBUG")}>debug client</button>
+        </div>
         {room_id !== null ? <>最後にプレイしたルーム: #{room_id}</> : <></>}
+        <footer>(C) 2024 東毛情報開発株式会社</footer>
       </>}
       {gameState == "MASTER" && <><Master token={token} /></>}
       {gameState == "CLIENT" && <><Client roomId={room_id} token={token} /></>}
       {gameState == "DEBUG" && <><DebugClient clientNum={30} /></>}
-    </div>
+    </div >
   );
 }
 
