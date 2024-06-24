@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from "react";
-import { API_SERVER } from "./globals.tsx";
 import "./client.css";
 
 const linefuncs: ((i: number) => boolean)[] = [
@@ -46,7 +45,7 @@ export default function Client({ roomId, token }: { "roomId": number | null, "to
     }
     {
       // join game
-      fetch(API_SERVER + "api/client_joingame.php", {
+      fetch("api/client_joingame.php", {
         method: "POST",
         credentials: 'include',
         headers: {
@@ -75,7 +74,7 @@ export default function Client({ roomId, token }: { "roomId": number | null, "to
       // update msgs
       const formData = new FormData();
       formData.append('room_id', room_id.toString());
-      fetch(API_SERVER + "api/gamestat.php", {
+      fetch("api/gamestat.php", {
         method: "POST",
         credentials: 'include',
         headers: {
@@ -132,7 +131,7 @@ export default function Client({ roomId, token }: { "roomId": number | null, "to
       //alert("hit: " + choose);
     }
   }, [events]);
-  
+
   // ヒット・ビンゴの点滅演出同期用ステート
   const [readyClassName, setReadyClassName] = useState("ready");
   const [winClassName, setWinClassName] = useState("win");
@@ -166,7 +165,7 @@ export default function Client({ roomId, token }: { "roomId": number | null, "to
         部屋IDは#{room_id}です<br />
         {gameFinished ? <>
           <button onClick={() => {
-            fetch(API_SERVER + "api/client_leavegame.php", {
+            fetch("api/client_leavegame.php", {
               method: "POST",
               credentials: 'include',
               headers: {

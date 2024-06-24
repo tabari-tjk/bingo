@@ -1,7 +1,5 @@
 import React, { useRef, useState } from "react";
-import App from "./App";
 import Client from "./client.tsx";
-import { API_SERVER } from "./globals.tsx";
 
 export default function DebugClient({ clientNum }: { clientNum: number }) {
     const [room_id, setRoomId] = useState<number>(0);
@@ -9,7 +7,7 @@ export default function DebugClient({ clientNum }: { clientNum: number }) {
     return (<>
         <input type="number" onChange={e => setRoomId(parseInt(e.target.value))} value={room_id} />
         <button onClick={() => {
-            fetch(API_SERVER + "api/login.php", {
+            fetch("api/login.php", {
                 method: "POST",
                 credentials: 'include',
                 headers: {
@@ -24,7 +22,7 @@ export default function DebugClient({ clientNum }: { clientNum: number }) {
                     }
                     setClients([...clients, <Client roomId={room_id} token={r.token} />]);
                     setInterval(() => {
-                        fetch(API_SERVER + "api/heartbeat.php", {
+                        fetch("api/heartbeat.php", {
                             method: "POST",
                             credentials: 'include',
                             headers: {

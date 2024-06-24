@@ -3,7 +3,6 @@ import './App.css';
 import { useState } from 'react';
 import Master from './master.tsx';
 import Client from './client.tsx';
-import { API_SERVER } from './globals.tsx';
 import DebugClient from './debug.tsx';
 
 type GameState = "TOP" | "MASTER" | "CLIENT" | "DEBUG";
@@ -12,7 +11,7 @@ function App() {
   const [room_id, setRoomId] = useState<number | null>(null);
   const [token, setToken] = useState<string>(() => window.localStorage.getItem("token") ?? "TOKEN_NOT_FOUND");
   useEffect(() => {
-    fetch(API_SERVER + "api/login.php", {
+    fetch("api/login.php", {
       method: "POST",
       credentials: 'include',
       headers: {
@@ -42,7 +41,7 @@ function App() {
 
   useEffect(() => {
     const id = setInterval(() => {
-      fetch(API_SERVER + "api/heartbeat.php", {
+      fetch("api/heartbeat.php", {
         method: "POST",
         credentials: 'include',
         headers: {
