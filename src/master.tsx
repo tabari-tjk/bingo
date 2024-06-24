@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from "react";
-import { API_SERVER } from "./globals.tsx";
 
 class GameState {
     room_id: number | null;
@@ -15,7 +14,7 @@ class GameState {
 export default function Master({ token }: { token: string }) {
     const [gameState, setGameState] = useState<GameState>(new GameState());
     useEffect(() => {
-        fetch(API_SERVER + "api/master_newgame.php", {
+        fetch("api/master_newgame.php", {
             method: "POST",
             credentials: 'include',
             headers: {
@@ -34,7 +33,7 @@ export default function Master({ token }: { token: string }) {
             return;
         }
         const id = setInterval(() => {
-            fetch(API_SERVER + "api/gamestat.php", {
+            fetch("api/gamestat.php", {
                 method: "POST",
                 credentials: 'include',
                 headers: {
@@ -56,7 +55,7 @@ export default function Master({ token }: { token: string }) {
     const [gameStarted, setGameStarted] = useState(false);
     const startGame = () => {
         if (!gameStarted) {
-            fetch(API_SERVER + "api/master_start_game.php", {
+            fetch("api/master_start_game.php", {
                 method: "POST",
                 credentials: 'include',
                 headers: {
@@ -67,7 +66,7 @@ export default function Master({ token }: { token: string }) {
         }
     };
     const endGame = () => {
-        fetch(API_SERVER + "api/master_close_room.php", {
+        fetch("api/master_close_room.php", {
             method: "POST",
             credentials: 'include',
             headers: {
@@ -81,7 +80,7 @@ export default function Master({ token }: { token: string }) {
             });
     };
     const choose = () => {
-        fetch(API_SERVER + "api/master_choose.php", {
+        fetch("api/master_choose.php", {
             method: "POST",
             credentials: 'include',
             headers: {
