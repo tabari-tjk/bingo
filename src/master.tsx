@@ -54,6 +54,9 @@ export default function Master({ token, backCallback }: { token: string, backCal
             })
                 .then(r => r.json())
                 .then(data => {
+                    if (gameState.room_state === "Joinable" && !data.joinable) {
+                        gameState.room_state = "StartGame";
+                    }
                     gameState.room_message = data.messages[0];
                     gameState.user_count = data.user_count;
                     setGameState({ ...gameState });
