@@ -86,18 +86,21 @@ export default function Master({ token }: { token: string }) {
         }
     };
     const endGame = () => {
-        fetch("api/master_close_room.php", {
-            method: "POST",
-            credentials: 'include',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({ token: token }),
-        })
-            .then(() => {
-                alert("部屋を解散しました。");
-                window.location.reload();
-            });
+        // ゲーム終了状態であれば確認なしで解散処理
+        if (gameState.room_state === "Finished" || window.confirm(`部屋#${gameState.room_id}を解散しますか？`)) {
+            fetch("api/master_close_room.php", {
+                method: "POST",
+                credentials: 'include',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ token: token }),
+            })
+                .then(() => {
+                    alert("部屋を解散しました。");
+                    window.location.reload();
+                });
+        }
     };
     const choose = () => {
         fetch("api/master_choose.php", {
