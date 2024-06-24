@@ -5,11 +5,11 @@ import Master from './master.tsx';
 import Client from './client.tsx';
 import DebugClient from './debug.tsx';
 
-type GameState = "TOP" | "MASTER" | "CLIENT" | "DEBUG";
+type GameState = "BEFORELOAD" | "TOP" | "MASTER" | "CLIENT" | "DEBUG";
 function App() {
-  const [gameState, setGameState] = useState<GameState>("TOP");
+  const [gameState, setGameState] = useState<GameState>("BEFORELOAD");
   const [room_id, setRoomId] = useState<number | null>(null);
-  const [token, setToken] = useState<string>(() => window.localStorage.getItem("token") ?? "TOKEN_NOT_FOUND");
+  const [token, setToken] = useState<string>(() => window.localStorage.getItem("token") ?? "");
   useEffect(() => {
     fetch("api/login.php", {
       method: "POST",
@@ -35,6 +35,8 @@ function App() {
               setGameState("CLIENT");
               break;
           }
+        } else {
+          setGameState("TOP");
         }
       });
   }, [token]);
@@ -64,7 +66,7 @@ function App() {
   return (
     <div className="App">
       {gameState == "TOP" && <>
-        <div id='top_title'>ビンゴゲーム</div>
+        <header id='top_title'>ビンゴゲーム</header>
         <div id="top_start_buttons">
           <button onClick={() => setGameState("MASTER")} className={`top_button`}>部屋を作る</button>
           <button onClick={() => setGameState("CLIENT")} className={`top_button`}>部屋に入る</button>
