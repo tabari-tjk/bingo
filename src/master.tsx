@@ -19,7 +19,7 @@ class GameState {
     }
 }
 
-export default function Master({ token }: { token: string }) {
+export default function Master({ token, backCallback }: { token: string, backCallback: Function }) {
     const [gameState, setGameState] = useState<GameState>(new GameState());
     useEffect(() => {
         if (gameState.room_id !== null) {
@@ -98,7 +98,7 @@ export default function Master({ token }: { token: string }) {
             })
                 .then(() => {
                     alert("部屋を解散しました。");
-                    window.location.reload();
+                    backCallback();
                 });
         }
     };

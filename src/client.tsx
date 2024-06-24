@@ -30,7 +30,7 @@ function boardToReadyWin(board: number[]) {
   return result;
 }
 
-export default function Client({ roomId, token }: { "roomId": number | null, "token": string }) {
+export default function Client({ roomId, token, backCallback }: { "roomId": number | null, "token": string, backCallback: Function }) {
   const [room_id, setRoomId] = useState<number | null>(roomId);
   const [player_id, setPlayerId] = useState(null);
   const [messages, SetMessages] = useState<string[]>([]);
@@ -61,7 +61,7 @@ export default function Client({ roomId, token }: { "roomId": number | null, "to
             SetBoard(data.board);
           } else {
             alert("参加が締め切られているか、部屋IDが間違っています。");
-            window.location.reload();
+            backCallback();
           }
         });
     }
@@ -105,7 +105,8 @@ export default function Client({ roomId, token }: { "roomId": number | null, "to
       do {
         rid_input = prompt("ゲームマスターから受け取った部屋IDを入力してください");
         if (rid_input === null) {
-          window.location.reload();
+          backCallback();
+          return;
         }
       } while (isNaN(parseInt(rid_input)));
       const rid = parseInt(rid_input);
@@ -173,7 +174,7 @@ export default function Client({ roomId, token }: { "roomId": number | null, "to
               },
               body: JSON.stringify({ token: token }),
             })
-              .then(() => window.location.reload());
+              .then(() => backCallback());
           }}>トップへ戻る</button>
         </> : <></>}
       </div>
