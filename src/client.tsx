@@ -146,20 +146,31 @@ export default function Client({ roomId, token, backCallback }: { "roomId": numb
   const boardAttr = board !== null ? boardToReadyWin(board) : [...Array(25).keys()].fill(0);
   return (
     <div id="client">
-      <div id="bingocard">
-        <div className="bingocard-head-cell">B</div>
-        <div className="bingocard-head-cell">I</div>
-        <div className="bingocard-head-cell">N</div>
-        <div className="bingocard-head-cell">G</div>
-        <div className="bingocard-head-cell">O</div>
-        {
-          board !== null ? [...Array(5).keys()].map((x, i) => {
-            return [...Array(5).keys()].map((y, i) => {
-              const pos = y * 5 + x;
-              return <div key={i} className={`bingocard-cell ${(boardAttr[pos] & 2) != 0 ? winClassName : (boardAttr[pos] & 1) != 0 ? readyClassName : board[pos] < 1 ? "hit" : ""}`}>{board[pos] == 0 ? "FREE" : Math.abs(board[pos])}</div>;
-            });
-          })
-            : <></>}
+      <header id="client_title">ビンゴゲーム</header>
+      <div id="bingocarg_container">
+        <table id="bingocard">
+          <thead>
+            <tr>
+              <th className="bingocard-head-cell">B</th>
+              <th className="bingocard-head-cell">I</th>
+              <th className="bingocard-head-cell">N</th>
+              <th className="bingocard-head-cell">G</th>
+              <th className="bingocard-head-cell">O</th>
+            </tr>
+          </thead>
+          <tbody>
+            {
+              board !== null && [...Array(5).keys()].map((x, i) => {
+                return <tr key={i}>
+                  {[...Array(5).keys()].map((y, i) => {
+                    const pos = y * 5 + x;
+                    return <td key={i} className={`bingocard-cell ${(boardAttr[pos] & 2) != 0 ? winClassName : (boardAttr[pos] & 1) != 0 ? readyClassName : board[pos] < 1 ? "hit" : ""} ${board[pos] == 0 ? "free" : ""}`}>{board[pos] == 0 ? "FREE" : Math.abs(board[pos])}</td>;
+                  })}
+                </tr>;
+              })
+            }
+          </tbody>
+        </table>
       </div>
       <div id="info">
         あなたのプレイヤーIDは{player_id}です<br />
@@ -184,7 +195,7 @@ export default function Client({ roomId, token, backCallback }: { "roomId": numb
 }
 
 function MessageList({ messages }: { "messages": string[] }) {
-  return (<ul>
+  return (<ul className="client_messagelist">
     {messages.map((e, i) => [e, i]).reverse().slice(0, 100).map(e => <li key={e[1]} className='fadeIn message'>{e[0]}</li>)}
   </ul>);
 }
