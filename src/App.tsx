@@ -63,6 +63,11 @@ function App() {
     };
   }, [token]);
 
+  const backCallback = () => {
+    setGameState("TOP");
+    setRoomId(null);
+  };
+
   return (
     <div className="App">
       {gameState == "TOP" && <>
@@ -75,8 +80,8 @@ function App() {
         {room_id !== null ? <>最後にプレイしたルーム: #{room_id}</> : <></>}
         <footer>(C) 2024 東毛情報開発株式会社</footer>
       </>}
-      {gameState == "MASTER" && <><Master token={token} backCallback={() => setGameState("TOP")} /></>}
-      {gameState == "CLIENT" && <><Client roomId={room_id} token={token} backCallback={() => setGameState("TOP")} /></>}
+      {gameState == "MASTER" && <><Master token={token} backCallback={backCallback} /></>}
+      {gameState == "CLIENT" && <><Client roomId={room_id} token={token} backCallback={backCallback} /></>}
       {gameState == "DEBUG" && <><DebugClient clientNum={30} /></>}
     </div >
   );
