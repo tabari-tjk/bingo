@@ -1,13 +1,21 @@
 import React, { useEffect, useState } from "react";
+import "./master.css";
+import Client from "./client.tsx";
+
+type RoomState = "Joinable" | "StartGame" | "Finished";
 
 class GameState {
     room_id: number | null;
     join_member_num: number;
-    room_status: string[];
+    room_message: string[];
+    room_state: RoomState;
+    user_count: number;
     constructor() {
         this.room_id = null;
         this.join_member_num = 0;
-        this.room_status = [];
+        this.room_message = [];
+        this.room_state = "Joinable";
+        this.user_count = 0;
     }
 }
 
@@ -46,8 +54,13 @@ export default function Master({ token }: { token: string }) {
             })
                 .then(r => r.json())
                 .then(data => {
-                    gameState.room_status = data.messages[0];
+                    gameState.room_message = data.messages[0];
+                    gameState.user_count = data.user_count;
                     setGameState({ ...gameState });
+                    if (data.finished) {
+                        gameState.room_state = "Finished";
+                        setGameState({ ...gameState });
+                    }
                 });
         }, 1000);
         return () => {
@@ -65,7 +78,11 @@ export default function Master({ token }: { token: string }) {
                     'Content-Type': 'application/json'
                 },
                 body: JSON.stringify({ token: token }),
-            }).then(() => setGameStarted(true));
+            }).then(() => {
+                gameState.room_state = "StartGame";
+                setGameState({ ...gameState });
+                setGameStarted(true);
+            });
         }
     };
     const endGame = () => {
@@ -94,22 +111,32 @@ export default function Master({ token }: { token: string }) {
     };
 
     return (
-        <div>
-            部屋ID:{gameState.room_id}
+        <div id="master_container">
+            <header id="master_title">ビンゴゲーム</header>
+            <fieldset id="master_control">
+                <legend>ゲームマスター用メニュー</legend>
+                <p>
+                    部屋ID:「{gameState.room_id}」<br />
+                    参加人数: {gameState.user_count}人
+                </p>
+                {
+                    gameState.room_id !== null && <>
+                        {gameState.room_state === "Joinable" && <button onClick={startGame}>参加締め切り・ゲーム開始</button>}
+                        {gameState.room_state === "StartGame" && <button onClick={choose}>抽選</button>}
+                        <button onClick={endGame}>ルーム解散</button>
+                    </>
+                }
+            </fieldset>
+            <MessageList messages={gameState.room_message} />
             {
-                gameState.room_id !== null && <>
-                    <button onClick={startGame}>参加締め切り・ゲーム開始</button>
-                    <button onClick={choose}>抽選</button>
-                    <button onClick={endGame}>ルーム解散</button>
-                    <MessageList messages={gameState.room_status} />
-                </>
+                //gameState.room_id !== null && <Client roomId={gameState.room_id} token={token} />
             }
         </div>
     );
 }
 
 function MessageList({ messages }: { "messages": string[] }) {
-    return (<ul>
+    return (<ul className="master_messagelist">
         {messages.map((e, i) => [e, i]).reverse().slice(0, 100).map(e => <li key={e[1]} className='fadeIn'>{e[0]}</li>)}
     </ul>);
 }

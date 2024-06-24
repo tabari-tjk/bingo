@@ -28,6 +28,7 @@ if ($room_id !== null) {
     $retval["events"] = $db->get_bingo_events($room_id, $last_evt);
     $retval["joinable"] = $db->is_room_joinable($room_id);
     $retval["finished"] = $db->is_room_finished($room_id);
+    $retval["user_count"] = $db->get_user_count($room_id);
 }
 
 echo json_encode($retval);

@@ -468,6 +468,18 @@ class DataBase
         $result = $stmt->execute();
         return $result !== false && $result->fetchArray()[0] == 0;
     }
+
+    // 部屋に参加しているGM以外の人数を取得
+    function get_user_count(int $room_id)
+    {
+        $stmt = $this->db->prepare("select count(*) from user where room_id = :room_id and is_gm = 0");
+        $stmt->bindValue(':room_id', $room_id, SQLITE3_INTEGER);
+        $result = $stmt->execute();
+        if ($result === false) {
+            return 0;
+        }
+        return $result->fetchArray()[0];
+    }
 }
 
 function array_shuffle(array $array)

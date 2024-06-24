@@ -22,6 +22,7 @@ if ($room_id !== null && $is_gm) {
     // 新たに部屋を作る
     $room_id = $db->create_new_room_id($token);
     if ($room_id !== null) {
+        $db->add_room_message($room_id, sprintf("部屋#%dを作成しました。", $room_id));
         $is_gm = true;
     }
 }

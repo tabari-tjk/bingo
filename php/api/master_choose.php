@@ -43,7 +43,7 @@ if ($room_id !== null && !$db->is_room_joinable($room_id) && $is_gm) {
     if (!$db->is_room_finished($room_id) && $db->is_all_players_win($room_id)) {
         $db->add_room_message($room_id, "全てのプレイヤーがビンゴしたため、ゲームを終了します。");
         $db->room_finish($room_id);
-        $db->add_room_message($room_id, sprintf("部屋#%dは解散されました。", $room_id));
+        //$db->add_room_message($room_id, sprintf("部屋#%dは解散されました。", $room_id));
     }
 }
 
