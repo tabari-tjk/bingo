@@ -11,12 +11,16 @@ class GameState {
     room_message: string[];
     room_state: RoomState;
     user_count: number;
+    win_user_count: number;
+    ready_user_count: number;
     constructor() {
         this.room_id = null;
         this.join_member_num = 0;
         this.room_message = [];
         this.room_state = "Joinable";
         this.user_count = 0;
+        this.win_user_count = 0;
+        this.ready_user_count = 0;
     }
 }
 
@@ -60,6 +64,8 @@ export default function Master({ token, backCallback }: { token: string, backCal
                     }
                     gameState.room_message = data.messages[0];
                     gameState.user_count = data.user_count;
+                    gameState.win_user_count = data.win_user_count;
+                    gameState.ready_user_count = data.ready_user_count;
                     setGameState({ ...gameState });
                     if (data.finished) {
                         gameState.room_state = "Finished";
@@ -124,7 +130,9 @@ export default function Master({ token, backCallback }: { token: string, backCal
                 <legend>ゲームマスター用メニュー</legend>
                 <p>
                     部屋ID:「{gameState.room_id}」<br />
-                    参加人数: {gameState.user_count}人
+                    参加人数: {gameState.user_count}人<br />
+                    リーチ人数: {gameState.ready_user_count}人<br />
+                    ビンゴ人数: {gameState.win_user_count}人
                 </p>
                 {
                     gameState.room_id !== null && <>

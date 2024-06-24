@@ -40,6 +40,7 @@ export default function Client({ roomId, token, backCallback }: { "roomId": numb
   const [gameFinished, SetGameFinished] = useState(false);
   const [last_msg, setLastMsg] = useState(0);
   const [last_evt, setLastEvt] = useState(0);
+  const [playerCounts, setPlayerCounts] = useState([0, 0, 0]);
   useEffect(() => {
     if (room_id === null) {
       return;
@@ -89,6 +90,7 @@ export default function Client({ roomId, token, backCallback }: { "roomId": numb
           setLastMsg(data.messages[1]);
           data.events[0].length > 0 && SetEvents([...events, ...data.events[0]]);
           setLastEvt(data.events[1]);
+          setPlayerCounts([data.user_count, data.ready_user_count, data.win_user_count]);
           if (data.finished) {
             clearInterval(id);
             SetGameFinished(true);
@@ -176,6 +178,7 @@ export default function Client({ roomId, token, backCallback }: { "roomId": numb
       <div id="info">
         あなたのプレイヤーIDは{player_id}です<br />
         部屋IDは#{room_id}です<br />
+        参加人数{playerCounts[0]}人のうち、リーチは{playerCounts[1]}人、ビンゴは{playerCounts[2]}人です<br />
         {gameFinished ? <>
           <button onClick={() => {
             fetch("api/client_leavegame.php", {

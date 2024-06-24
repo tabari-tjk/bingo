@@ -29,6 +29,8 @@ if ($room_id !== null) {
     $retval["joinable"] = $db->is_room_joinable($room_id);
     $retval["finished"] = $db->is_room_finished($room_id);
     $retval["user_count"] = $db->get_user_count($room_id);
+    $retval["win_user_count"] = $db->get_win_user_count($room_id);
+    $retval["ready_user_count"] = $db->get_ready_user_count($room_id);
 }
 
 echo json_encode($retval);

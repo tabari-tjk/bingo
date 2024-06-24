@@ -16,7 +16,7 @@ class DataBase
         // テーブル作成
         $this->db->exec('CREATE TABLE IF NOT EXISTS room(id INTEGER PRIMARY KEY AUTOINCREMENT, last_access_time integer, joinable integer, finished integer)');
         $this->db->exec("CREATE table if not exists room_message(id integer primary key autoincrement, room_id integer not null, msg text)");
-        $this->db->exec('CREATE TABLE IF NOT EXISTS user(token text primary key, last_access_time integer, room_id integer, player_id integer, is_gm integer, win integer)');
+        $this->db->exec('CREATE TABLE IF NOT EXISTS user(token text primary key, last_access_time integer, room_id integer, player_id integer, is_gm integer, win integer, ready integer)');
         $this->db->exec('CREATE TABLE IF NOT EXISTS bingocard(token text, pos integer not null, bingo_number integer, primary key(token, pos))');
         $this->db->exec('CREATE TABLE IF NOT EXISTS bingochoosed(id integer primary key autoincrement, room_id integer, bingo_number integer)');
 
@@ -209,8 +209,8 @@ class DataBase
     function create_new_user(string $token)
     {
         $this->db->exec('begin');
-        $stmt = $this->db->prepare("INSERT into user(token, last_access_time, room_id, player_id, is_gm, win)"
-            . " values(:token, :last_access_time, NULL, NULL, 0, 0)");
+        $stmt = $this->db->prepare("INSERT into user(token, last_access_time, room_id, player_id, is_gm, win, ready)"
+            . " values(:token, :last_access_time, NULL, NULL, 0, 0, 0)");
         $stmt->bindValue(':token', $token, SQLITE3_TEXT);
         $stmt->bindValue(':last_access_time', time(), SQLITE3_INTEGER);
         $result = $stmt->execute();
@@ -234,7 +234,7 @@ class DataBase
         if (!$this->is_room_joinable($room_id)) {
             return null;
         }
-        $stmt = $this->db->prepare("UPDATE user set room_id = :room_id, player_id = (select max(player_id) from user where room_id = :room_id)+1, is_gm = 0, win = 0 where token = :token");
+        $stmt = $this->db->prepare("UPDATE user set room_id = :room_id, player_id = (select max(player_id) from user where room_id = :room_id)+1, is_gm = 0, win = 0, ready = 0 where token = :token");
         $stmt->bindValue(':token', $token, SQLITE3_TEXT);
         $stmt->bindValue(':room_id', $room_id, SQLITE3_INTEGER);
         $result = $stmt->execute();
@@ -447,6 +447,9 @@ class DataBase
 
             if ($max_hit == 4) {
                 array_push($ready_players, $player_id);
+                $stmt = $this->db->prepare("UPDATE user set ready = 1 where token = :token");
+                $stmt->bindValue(':token', $token, SQLITE3_TEXT);
+                $result = $stmt->execute();
             } else if ($max_hit == 5) {
                 array_push($win_players, $player_id);
                 $stmt = $this->db->prepare("UPDATE user set win = 1 where token = :token");
@@ -473,6 +476,30 @@ class DataBase
     function get_user_count(int $room_id)
     {
         $stmt = $this->db->prepare("select count(*) from user where room_id = :room_id and is_gm = 0");
+        $stmt->bindValue(':room_id', $room_id, SQLITE3_INTEGER);
+        $result = $stmt->execute();
+        if ($result === false) {
+            return 0;
+        }
+        return $result->fetchArray()[0];
+    }
+
+    // 部屋に参加しているGM以外の、上がった人数を取得
+    function get_win_user_count(int $room_id)
+    {
+        $stmt = $this->db->prepare("select count(*) from user where room_id = :room_id and is_gm = 0 and win != 0");
+        $stmt->bindValue(':room_id', $room_id, SQLITE3_INTEGER);
+        $result = $stmt->execute();
+        if ($result === false) {
+            return 0;
+        }
+        return $result->fetchArray()[0];
+    }
+
+    // 部屋に参加しているGM以外の、上がっておらずリーチしている人数を取得
+    function get_ready_user_count(int $room_id)
+    {
+        $stmt = $this->db->prepare("select count(*) from user where room_id = :room_id and is_gm = 0 and win = 0 and ready != 0");
         $stmt->bindValue(':room_id', $room_id, SQLITE3_INTEGER);
         $result = $stmt->execute();
         if ($result === false) {
