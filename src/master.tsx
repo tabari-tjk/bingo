@@ -124,9 +124,9 @@ export default function Master({ token }: { token: string }) {
                 </p>
                 {
                     gameState.room_id !== null && <>
-                        {gameState.room_state === "Joinable" && <button onClick={startGame}>参加締め切り・ゲーム開始</button>}
-                        {gameState.room_state === "StartGame" && <button onClick={choose}>抽選</button>}
-                        <button onClick={endGame}>ルーム解散</button>
+                        {gameState.room_state === "Joinable" && <button onClick={startGame} className="master_button">参加締め切り・ゲーム開始</button>}
+                        {gameState.room_state === "StartGame" && <button onClick={choose} className="master_button">抽選</button>}
+                        <button onClick={endGame} className="master_button">ルーム解散</button>
                     </>
                 }
             </fieldset>
