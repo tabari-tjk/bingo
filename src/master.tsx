@@ -48,7 +48,7 @@ export default function Master({ token, backCallback }: { token: string, backCal
         if (gameState.room_id === null) {
             return;
         }
-        const id = setInterval(() => {
+        const f = () => {
             fetch("api/gamestat.php", {
                 method: "POST",
                 credentials: 'include',
@@ -72,7 +72,9 @@ export default function Master({ token, backCallback }: { token: string, backCal
                         setGameState({ ...gameState });
                     }
                 });
-        }, 1000);
+        };
+        f();
+        const id = setInterval(f, 1000);
         return () => {
             clearInterval(id);
         };

@@ -72,7 +72,7 @@ export default function Client({ roomId, token, backCallback }: { "roomId": numb
     if (room_id === null) {
       return;
     }
-    const id = setInterval(() => {
+    const f = () => {
       // update msgs
       const formData = new FormData();
       formData.append('room_id', room_id.toString());
@@ -96,7 +96,9 @@ export default function Client({ roomId, token, backCallback }: { "roomId": numb
             SetGameFinished(true);
           }
         });
-    }, 1000);
+    };
+    f();
+    const id = setInterval(f, 1000);
     return () => {
       clearInterval(id);
     };
