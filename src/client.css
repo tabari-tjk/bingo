@@ -111,7 +111,7 @@
 
 #client_animation_container {
     visibility: hidden;
-    position: absolute;
+    position: fixed;
     top: 0;
     left: 0;
     background-color: rgba(0, 0, 0, 0.5);
@@ -128,26 +128,29 @@
     word-break: keep-all;
     user-select: none;
 }
-
-.client_ready_animation_scrollin {
-    animation: slideinTop 5s 1;
-    transform: translateY(-100vh);
+#client_animation_container.visible{
+    visibility: unset;
 }
 
-@keyframes slideinTop {
+#client_animation_draw {
+    height: 100%;
+    display: flex;
+}
+
+#client_animation_draw>img {
+    width: 100%;
+    max-width: fit-content;
+    object-fit: cover;
+    margin: auto;
+    animation: client_draw 3s 1;
+}
+
+@keyframes client_draw {
     0% {
-        transform: translateY(-100vh);
-    }
-
-    40% {
-        transform: translateY(0);
-    }
-
-    60% {
-        transform: translateY(0);
+        transform: rotateZ(0deg);
     }
 
     100% {
-        transform: translateY(-100vh);
+        transform: rotateZ(360deg);
     }
 }

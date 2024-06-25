@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import "./client.css";
 import WakeLock from "./wakelock.tsx";
 
@@ -30,6 +30,27 @@ function boardToReadyWin(board: number[]) {
   });
   return result;
 }
+// 今回抽選された番号が絡む、縦横斜めの並びをチェックし、各列のヒット数の最大値
+function boardMaxHit(board: number[], current: number) {
+  /*
+  $max_hit = max(array_map(function ($f) use ($board, $bingo_number) {
+      $line = array_filter($board, $f, ARRAY_FILTER_USE_KEY);
+      if (in_array(-$bingo_number, $line)) {
+          return array_sum(array_map(function ($i) {
+              return $i < 1;
+          }, $line));
+      }
+      return -1;
+  }, $filter_funcs));
+  */
+  return Math.max(...linefuncs.map(f => {
+    const line = board.filter((_, i) => f(i));
+    if (line.includes(-current)) {
+      return line.filter(e => e < 1).length;
+    }
+    return -1;
+  }));
+}
 
 export default function Client({ roomId, token, backCallback }: { "roomId": number | null, "token": string, backCallback: Function }) {
   const [room_id, setRoomId] = useState<number | null>(roomId);
@@ -41,6 +62,9 @@ export default function Client({ roomId, token, backCallback }: { "roomId": numb
   const [last_msg, setLastMsg] = useState(0);
   const [last_evt, setLastEvt] = useState(0);
   const [playerCounts, setPlayerCounts] = useState([0, 0, 0]);
+  const animation_container_ref = useRef<HTMLDivElement | null>(null);
+  const client_animation_draw_img_ref = useRef<HTMLImageElement | null>(null);
+  const [animation_running, setAnimationRunning] = useState(false);
   useEffect(() => {
     if (room_id === null) {
       return;
@@ -129,20 +153,58 @@ export default function Client({ roomId, token, backCallback }: { "roomId": numb
   });
 
   useEffect(() => {
-    if (events.length === 0 || board === null) {
+    if (events.length === 0 || board === null || animation_running) {
       return;
     }
     const choose = events.shift() as number; // SAFETY: lengthはチェック済み
     SetEvents([...events]);
     const idx = board.indexOf(choose);
     if (idx !== -1) {
-      board[idx] = -choose;
-      SetBoard([...board]);
-      setReadyClassName("");
-      setWinClassName("");
-      //alert("hit: " + choose);
+      setAnimationRunning(true);
+      animation_container_ref?.current?.classList.add("visible");
+      const draw_anim = [
+        { transform: "rotateZ(0deg)" },
+        { transform: "rotateZ(10deg)" },
+        { transform: "rotateZ(-10deg)" },
+        { transform: "rotateZ(10deg)" },
+        { transform: "rotateZ(-10deg)" },
+        { transform: "rotateZ(10deg)" },
+        { transform: "rotateZ(-10deg)" },
+        { transform: "rotateZ(10deg)" },
+        { transform: "rotateZ(-10deg)" },
+        { transform: "rotateZ(10deg)", opacity: "1" },
+        { transform: "rotateZ(-10deg)" },
+        { transform: "rotateZ(10deg)" },
+        { transform: "rotateZ(-10deg)" },
+        { transform: "rotateZ(10deg)" },
+        { transform: "rotateZ(-10deg)" },
+        { transform: "rotateZ(10deg)" },
+        { transform: "rotateZ(-10deg)" },
+        { transform: "rotateZ(10deg)" },
+        { transform: "rotateZ(-10deg)" },
+        { transform: "rotateZ(0deg)", opacity: "0" },
+      ];
+      client_animation_draw_img_ref?.current?.animate(draw_anim, {
+        duration: 3000,
+        iterations: 1,
+      }).addEventListener("finish", () => {
+        board[idx] = -choose;
+        SetBoard([...board]);
+        const maxhit = boardMaxHit(board, choose);
+        if (maxhit === 4) {
+          window.alert("リーチ！");
+        }
+        else if (maxhit === 5) {
+          window.alert("ビンゴ！");
+        }
+        else { }
+        setReadyClassName("");
+        setWinClassName("");
+        animation_container_ref?.current?.classList.remove("visible");
+        setAnimationRunning(false);
+      });
     }
-  }, [events]);
+  }, [events, animation_running]);
 
   // ヒット・ビンゴの点滅演出同期用ステート
   const [readyClassName, setReadyClassName] = useState("ready");
@@ -203,6 +265,11 @@ export default function Client({ roomId, token, backCallback }: { "roomId": numb
       </div>
       <MessageList messages={messages} />
       <WakeLock />
+      <div id="client_animation_container" ref={animation_container_ref}>
+        <div id="client_animation_draw">
+          <img id="client_animation_draw_img" src="rdesign_09606.png" ref={client_animation_draw_img_ref} />
+        </div>
+      </div>
     </div>
   );
 }
@@ -211,9 +278,4 @@ function MessageList({ messages }: { "messages": string[] }) {
   return (<ul className="client_messagelist">
     {messages.map((e, i) => [e, i]).reverse().slice(0, 100).map(e => <li key={e[1]} className='fadeIn message'>{e[0]}</li>)}
   </ul>);
-}
-
-interface HitEffect {
-  draw(): React.JSX.Element;
-  finished(): boolean;
 }
