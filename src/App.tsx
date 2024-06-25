@@ -11,6 +11,7 @@ function App() {
   const [room_id, setRoomId] = useState<number | null>(null);
   const [token, setToken] = useState<string>(() => window.localStorage.getItem("token") ?? "");
   useEffect(() => {
+    const abortController = new AbortController();
     fetch("api/login.php", {
       method: "POST",
       credentials: 'include',
@@ -18,6 +19,7 @@ function App() {
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({ token: token }),
+      signal: abortController.signal
     })
       .then(r => r.json())
       .then(r => {
@@ -38,11 +40,15 @@ function App() {
         } else {
           setGameState("TOP");
         }
-      });
+      })
+      .catch(e => { console.log(e); });
+    return () => {
+      abortController.abort();
+    };
   }, [token]);
 
   useEffect(() => {
-    const id = setInterval(() => {
+    const f = () => {
       fetch("api/heartbeat.php", {
         method: "POST",
         credentials: 'include',
@@ -57,7 +63,9 @@ function App() {
             alert("Error: userはタイムアウトしました");
           }
         });
-    }, 10000);
+    };
+    f();
+    const id = setInterval(f, 10000);
     return () => {
       clearInterval(id);
     };
