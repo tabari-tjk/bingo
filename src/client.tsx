@@ -45,6 +45,7 @@ export default function Client({ roomId, token, backCallback }: { "roomId": numb
     if (room_id === null) {
       return;
     }
+    const abortController = new AbortController();
     {
       // join game
       fetch("api/client_joingame.php", {
@@ -54,6 +55,7 @@ export default function Client({ roomId, token, backCallback }: { "roomId": numb
           'Content-Type': 'application/json'
         },
         body: JSON.stringify({ token: token, room_id }),
+        signal: abortController.signal
       })
         .then(r => r.json())
         .then(data => {
@@ -65,8 +67,12 @@ export default function Client({ roomId, token, backCallback }: { "roomId": numb
             alert("参加が締め切られているか、部屋IDが間違っています。");
             backCallback();
           }
-        });
+        })
+        .catch(() => { });
     }
+    return () => {
+      abortController.abort();
+    };
   }, [room_id]);
   useEffect(() => {
     if (room_id === null) {

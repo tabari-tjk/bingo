@@ -9,6 +9,7 @@ class GameState {
     room_id: number | null;
     join_member_num: number;
     room_message: string[];
+    last_msg: number;
     room_state: RoomState;
     user_count: number;
     win_user_count: number;
@@ -17,6 +18,7 @@ class GameState {
         this.room_id = null;
         this.join_member_num = 0;
         this.room_message = [];
+        this.last_msg = 0;
         this.room_state = "Joinable";
         this.user_count = 0;
         this.win_user_count = 0;
@@ -30,6 +32,7 @@ export default function Master({ token, backCallback }: { token: string, backCal
         if (gameState.room_id !== null) {
             return;
         }
+        const abortController = new AbortController();
         fetch("api/master_newgame.php", {
             method: "POST",
             credentials: 'include',
@@ -37,12 +40,17 @@ export default function Master({ token, backCallback }: { token: string, backCal
                 'Content-Type': 'application/json'
             },
             body: JSON.stringify({ token: token }),
+            signal: abortController.signal
         })
             .then(r => r.json())
             .then(data => {
                 gameState.room_id = data;
                 setGameState({ ...gameState });
-            });
+            })
+            .catch(() => { });
+        return () => {
+            abortController.abort();
+        };
     }, [gameState, token]);
     useEffect(() => {
         if (gameState.room_id === null) {
@@ -55,20 +63,37 @@ export default function Master({ token, backCallback }: { token: string, backCal
                 headers: {
                     'Content-Type': 'application/json'
                 },
-                body: JSON.stringify({ token: token }),
+                body: JSON.stringify({ token, last_msg: gameState.last_msg }),
             })
                 .then(r => r.json())
                 .then(data => {
+                    let changed = false;
                     if (gameState.room_state === "Joinable" && !data.joinable) {
                         gameState.room_state = "StartGame";
+                        changed = true;
                     }
-                    gameState.room_message = data.messages[0];
-                    gameState.user_count = data.user_count;
-                    gameState.win_user_count = data.win_user_count;
-                    gameState.ready_user_count = data.ready_user_count;
-                    setGameState({ ...gameState });
-                    if (data.finished) {
+                    if (gameState.last_msg !== data.messages[1]) {
+                        gameState.room_message = [...gameState.room_message, ...data.messages[0]];
+                        gameState.last_msg = data.messages[1];
+                        changed = true;
+                    }
+                    if (gameState.user_count !== data.user_count) {
+                        gameState.user_count = data.user_count;
+                        changed = true;
+                    }
+                    if (gameState.win_user_count !== data.win_user_count) {
+                        gameState.win_user_count = data.win_user_count;
+                        changed = true;
+                    }
+                    if (gameState.ready_user_count !== data.ready_user_count) {
+                        gameState.ready_user_count = data.ready_user_count;
+                        changed = true;
+                    }
+                    if (gameState.room_state !== "Finished" && data.finished) {
                         gameState.room_state = "Finished";
+                        changed = true;
+                    }
+                    if (changed) {
                         setGameState({ ...gameState });
                     }
                 });

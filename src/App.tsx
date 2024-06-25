@@ -41,7 +41,7 @@ function App() {
           setGameState("TOP");
         }
       })
-      .catch(e => { console.log(e); });
+      .catch(() => { });
     return () => {
       abortController.abort();
     };
