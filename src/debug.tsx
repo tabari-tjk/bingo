@@ -4,6 +4,7 @@ import Client from "./client.tsx";
 export default function DebugClient({ clientNum }: { clientNum: number }) {
     const [room_id, setRoomId] = useState<number>(0);
     const [clients, setClients] = useState<React.JSX.Element[]>([]);
+    const [hide, setHide] = useState(false);
     return (<>
         <input type="number" onChange={e => setRoomId(parseInt(e.target.value))} value={room_id} />
         <button onClick={() => {
@@ -20,7 +21,7 @@ export default function DebugClient({ clientNum }: { clientNum: number }) {
                     if (r.token === null) {
                         return;
                     }
-                    setClients([...clients, <Client roomId={room_id} token={r.token} />]);
+                    setClients([...clients, <Client roomId={room_id} token={r.token} backCallback={() => { }} />]);
                     setInterval(() => {
                         fetch("api/heartbeat.php", {
                             method: "POST",
@@ -39,7 +40,8 @@ export default function DebugClient({ clientNum }: { clientNum: number }) {
                     }, 10000);
                 });
         }}>add client</button>
-        <div style={{ "display": "flex", "flexWrap": "wrap" }}>
+        <button onClick={() => { setHide(!hide) }}>show/hide</button>
+        <div style={{ "display": hide ? "none" : "flex", "flexWrap": "wrap" }}>
             {clients.map((c) => <div style={{ "border": "1px dotted" }}>
                 {c}
             </div>)}
