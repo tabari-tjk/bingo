@@ -16,6 +16,7 @@
     font-display: block;
     text-shadow: 4px 4px 4px #aaa;
     word-break: keep-all;
+    user-select: none;
 }
 
 #bingocarg_container {
@@ -106,4 +107,47 @@
 .client_messagelist {
     overflow: visible scroll;
     min-width: 50vw;
+}
+
+#client_animation_container {
+    visibility: hidden;
+    position: absolute;
+    top: 0;
+    left: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+    width: 100vw;
+    height: 100vh;
+
+    text-align: center;
+    font-family: "Mochiy Pop One", sans-serif;
+    font-weight: 400;
+    font-style: normal;
+    font-size: 20vw;
+    font-display: block;
+    text-shadow: 4px 4px 4px #aaa;
+    word-break: keep-all;
+    user-select: none;
+}
+
+.client_ready_animation_scrollin {
+    animation: slideinTop 5s 1;
+    transform: translateY(-100vh);
+}
+
+@keyframes slideinTop {
+    0% {
+        transform: translateY(-100vh);
+    }
+
+    40% {
+        transform: translateY(0);
+    }
+
+    60% {
+        transform: translateY(0);
+    }
+
+    100% {
+        transform: translateY(-100vh);
+    }
 }

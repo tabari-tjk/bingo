@@ -13,6 +13,8 @@
     font-size: 3em;
     font-display: block;
     text-shadow: 4px 4px 4px #aaa;
+    word-break: keep-all;
+    user-select: none;
 }
 
 #master_control {

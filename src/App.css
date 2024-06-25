@@ -58,6 +58,8 @@ footer {
     font-size: 10vw;
     font-display: block;
     text-shadow: 4px 4px 4px #aaa;
+    word-break: keep-all;
+    user-select: none;
 }
 
 #top_start_buttons {
