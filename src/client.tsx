@@ -3,18 +3,18 @@ import "./client.css";
 import WakeLock from "./wakelock.tsx";
 
 const linefuncs: ((i: number) => boolean)[] = [
-  i => i % 5 == 0,
-  i => i % 5 == 1,
-  i => i % 5 == 2,
-  i => i % 5 == 3,
-  i => i % 5 == 4,
-  i => Math.floor(i / 5) == 0,
-  i => Math.floor(i / 5) == 1,
-  i => Math.floor(i / 5) == 2,
-  i => Math.floor(i / 5) == 3,
-  i => Math.floor(i / 5) == 4,
-  i => i % 6 == 0,
-  i => i % 4 == 0 && i != 0 && i != 24,
+  i => i % 5 === 0,
+  i => i % 5 === 1,
+  i => i % 5 === 2,
+  i => i % 5 === 3,
+  i => i % 5 === 4,
+  i => Math.floor(i / 5) === 0,
+  i => Math.floor(i / 5) === 1,
+  i => Math.floor(i / 5) === 2,
+  i => Math.floor(i / 5) === 3,
+  i => Math.floor(i / 5) === 4,
+  i => i % 6 === 0,
+  i => i % 4 === 0 && i !== 0 && i !== 24,
 ];
 function boardToReadyWin(board: number[]) {
   const result = [...Array(25).keys()].fill(0);
@@ -70,34 +70,32 @@ export default function Client({ roomId, token, backCallback }: { "roomId": numb
       return;
     }
     const abortController = new AbortController();
-    {
-      // join game
-      fetch("api/client_joingame.php", {
-        method: "POST",
-        credentials: 'include',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ token: token, room_id }),
-        signal: abortController.signal
+    // join game
+    fetch("api/client_joingame.php", {
+      method: "POST",
+      credentials: 'include',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ token: token, room_id }),
+      signal: abortController.signal
+    })
+      .then(r => r.json())
+      .then(data => {
+        if (data !== null && data.room_id !== null) {
+          setPlayerId(data.player_id);
+          setRoomId(data.room_id);
+          SetBoard(data.board);
+        } else {
+          alert("参加が締め切られているか、部屋IDが間違っています。");
+          backCallback();
+        }
       })
-        .then(r => r.json())
-        .then(data => {
-          if (data !== null && data.room_id !== null) {
-            setPlayerId(data.player_id);
-            setRoomId(data.room_id);
-            SetBoard(data.board);
-          } else {
-            alert("参加が締め切られているか、部屋IDが間違っています。");
-            backCallback();
-          }
-        })
-        .catch(() => { });
-    }
+      .catch(() => { });
     return () => {
       abortController.abort();
     };
-  }, [room_id]);
+  }, [room_id, token, backCallback]);
   useEffect(() => {
     if (room_id === null) {
       return;
@@ -132,7 +130,7 @@ export default function Client({ roomId, token, backCallback }: { "roomId": numb
     return () => {
       clearInterval(id);
     };
-  }, [room_id, last_msg, last_evt]);
+  }, [room_id, last_msg, last_evt, events, messages, token]);
 
   useEffect(() => {
     const id = room_id ?? setTimeout(() => {
@@ -204,7 +202,7 @@ export default function Client({ roomId, token, backCallback }: { "roomId": numb
         setAnimationRunning(false);
       });
     }
-  }, [events, animation_running]);
+  }, [events, animation_running, board]);
 
   // ヒット・ビンゴの点滅演出同期用ステート
   const [readyClassName, setReadyClassName] = useState("ready");
@@ -237,7 +235,7 @@ export default function Client({ roomId, token, backCallback }: { "roomId": numb
                 return <tr key={i}>
                   {[...Array(5).keys()].map((y, i) => {
                     const pos = y * 5 + x;
-                    return <td key={i} className={`bingocard-cell ${(boardAttr[pos] & 2) != 0 ? winClassName : (boardAttr[pos] & 1) != 0 ? readyClassName : board[pos] < 1 ? "hit" : ""} ${board[pos] == 0 ? "free" : ""}`}>{board[pos] == 0 ? "FREE" : Math.abs(board[pos])}</td>;
+                    return <td key={i} className={`bingocard-cell ${(boardAttr[pos] & 2) !== 0 ? winClassName : (boardAttr[pos] & 1) !== 0 ? readyClassName : board[pos] < 1 ? "hit" : ""} ${board[pos] === 0 ? "free" : ""}`}>{board[pos] === 0 ? "FREE" : Math.abs(board[pos])}</td>;
                   })}
                 </tr>;
               })
@@ -267,7 +265,7 @@ export default function Client({ roomId, token, backCallback }: { "roomId": numb
       <WakeLock />
       <div id="client_animation_container" ref={animation_container_ref}>
         <div id="client_animation_draw">
-          <img id="client_animation_draw_img" src="rdesign_09606.png" ref={client_animation_draw_img_ref} />
+          <img id="client_animation_draw_img" src="rdesign_09606.png" ref={client_animation_draw_img_ref} alt="ビンゴマシン" />
         </div>
       </div>
     </div>

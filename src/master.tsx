@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from "react";
 import "./master.css";
-import Client from "./client.tsx";
 import WakeLock from "./wakelock.tsx";
 
 type RoomState = "Joinable" | "StartGame" | "Finished";
