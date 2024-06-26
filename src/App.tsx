@@ -86,7 +86,7 @@ function App() {
     return () => {
       abortController.abort();
     };
-  }, [user_name]);
+  }, [token, user_name]);
 
   const backCallback = () => {
     setGameState("TOP");
@@ -96,7 +96,7 @@ function App() {
   const dialog_ref = useRef<HTMLDialogElement | null>(null);
   return (
     <div className="App">
-      {gameState == "TOP" && <>
+      {gameState === "TOP" && <>
         <header id='top_title'>ビンゴゲーム</header>
         <div id="top_start_buttons">
           <button onClick={() => setGameState("MASTER")} className={`top_button`}>部屋を作る</button>
@@ -140,9 +140,9 @@ function App() {
         </dialog>
         <footer>(C) 2024 東毛情報開発株式会社</footer>
       </>}
-      {gameState == "MASTER" && <><Master token={token} backCallback={backCallback} /></>}
-      {gameState == "CLIENT" && <><Client roomId={room_id} token={token} backCallback={backCallback} /></>}
-      {gameState == "DEBUG" && <><DebugClient clientNum={30} /></>}
+      {gameState === "MASTER" && <><Master token={token} backCallback={backCallback} /></>}
+      {gameState === "CLIENT" && <><Client roomId={room_id} token={token} backCallback={backCallback} /></>}
+      {gameState === "DEBUG" && <><DebugClient clientNum={30} /></>}
     </div >
   );
 }
