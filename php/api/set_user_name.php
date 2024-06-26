@@ -14,8 +14,13 @@ if ($params === null || !array_key_exists("token", $params) || !$db->is_user_exi
 }
 $token = $params["token"];
 
-if (array_key_exists("username", $params) && $params["username"] !== null) {
-    $db->set_user_name($token, $params["username"]);
+if (array_key_exists("username", $params)) {
+    $username = $params["username"] ?? "名無しさん";
+    $username = trim($params["username"]);
+    if(strlen($username) === 0) {
+        $username = "名無しさん";
+    }
+    $db->set_user_name($token, $username);
 }
 
 echo "true";
