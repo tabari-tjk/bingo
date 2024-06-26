@@ -19,7 +19,7 @@ $player_id = null;
 $room_id = null;
 $is_gm = $db->is_user_gm($token);
 $board = null;
-if (array_key_exists("room_id", $params) && $db->is_room_exist($params["room_id"])) {
+if (array_key_exists("room_id", $params) && $params["room_id"] !== null && $db->is_room_exist($params["room_id"])) {
     if (!$is_gm) {
         $room_id = $params["room_id"];
         // すでに参加済みの部屋があるならplayer_idが取得できる
