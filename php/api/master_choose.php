@@ -31,13 +31,13 @@ if ($room_id !== null && !$db->is_room_joinable($room_id) && $is_gm) {
         $db->add_bingo_event($room_id, $result[0]);
         $db->add_room_message($room_id, sprintf("抽選された番号は「%d」です。", $result[0]));
         foreach ($result[1] as $hit) {
-            $db->add_room_message($room_id, sprintf("プレイヤー#%dさんがヒットしました。", $hit));
+            $db->add_room_message($room_id, sprintf("%sさんがヒットしました。", $hit));
         }
         foreach ($result[2] as $ready) {
-            $db->add_room_message($room_id, sprintf("プレイヤー#%dさんがリーチしました。", $ready));
+            $db->add_room_message($room_id, sprintf("%sさんがリーチしました。", $ready));
         }
         foreach ($result[3] as $win) {
-            $db->add_room_message($room_id, sprintf("プレイヤー#%dさんが上がりました！", $win));
+            $db->add_room_message($room_id, sprintf("%sさんが上がりました！", $win));
         }
     }
     if (!$db->is_room_finished($room_id) && $db->is_all_players_win($room_id)) {

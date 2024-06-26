@@ -446,17 +446,17 @@ class DataBase
             }, $filter_funcs));
 
             if ($max_hit == 4) {
-                array_push($ready_players, $player_id);
+                array_push($ready_players, $this->get_user_name_by_pid($room_id, $player_id));
                 $stmt = $this->db->prepare("UPDATE user set ready = 1 where token = :token");
                 $stmt->bindValue(':token', $token, SQLITE3_TEXT);
                 $result = $stmt->execute();
             } else if ($max_hit == 5) {
-                array_push($win_players, $player_id);
+                array_push($win_players, $this->get_user_name_by_pid($room_id, $player_id));
                 $stmt = $this->db->prepare("UPDATE user set win = 1 where token = :token");
                 $stmt->bindValue(':token', $token, SQLITE3_TEXT);
                 $result = $stmt->execute();
             } else {
-                array_push($hit_players, $player_id);
+                array_push($hit_players, $this->get_user_name_by_pid($room_id, $player_id));
             }
         }
 
@@ -518,6 +518,19 @@ class DataBase
             return null;
         }
         return $result->fetchArray()[0] ?? sprintf("プレイヤー#%d", $result->fetchArray()[1]);
+    }
+
+    // ユーザ名取得
+    function get_user_name_by_pid(int $room_id, int $player_id)
+    {
+        $stmt = $this->db->prepare("select username from user where room_id = :room_id and player_id = :player_id");
+        $stmt->bindValue(':room_id', $room_id, SQLITE3_INTEGER);
+        $stmt->bindValue(':player_id', $player_id, SQLITE3_INTEGER);
+        $result = $stmt->execute();
+        if ($result === false) {
+            return sprintf("プレイヤー#%d", $player_id);
+        }
+        return $result->fetchArray()[0] ?? sprintf("プレイヤー#%d", $player_id);
     }
 
     // ユーザ名設定

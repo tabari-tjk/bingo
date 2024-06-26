@@ -29,7 +29,7 @@ if (array_key_exists("room_id", $params) && $params["room_id"] !== null && $db->
             $player_id = $db->join_room($token, $room_id);
             $board = $db->get_bingo_card($token);
 
-            $db->add_room_message($room_id, sprintf("プレイヤー#%dが参加しました", $player_id));
+            $db->add_room_message($room_id, sprintf("%sさんが参加しました", $db->get_user_name_by_pid($room_id, $player_id)));
         } else {
             // 参加済みの部屋IDを返す
             $room_id = $db->get_user_room_id($token);
