@@ -16,7 +16,7 @@ class DataBase
         // テーブル作成
         $this->db->exec('CREATE TABLE IF NOT EXISTS room(id INTEGER PRIMARY KEY AUTOINCREMENT, last_access_time integer, joinable integer, finished integer)');
         $this->db->exec("CREATE table if not exists room_message(id integer primary key autoincrement, room_id integer not null, msg text)");
-        $this->db->exec('CREATE TABLE IF NOT EXISTS user(token text primary key, last_access_time integer, room_id integer, player_id integer, is_gm integer, win integer, ready integer)');
+        $this->db->exec('CREATE TABLE IF NOT EXISTS user(token text primary key, last_access_time integer, room_id integer, player_id integer, is_gm integer, win integer, ready integer, username text)');
         $this->db->exec('CREATE TABLE IF NOT EXISTS bingocard(token text, pos integer not null, bingo_number integer, primary key(token, pos))');
         $this->db->exec('CREATE TABLE IF NOT EXISTS bingochoosed(id integer primary key autoincrement, room_id integer, bingo_number integer)');
 
@@ -209,8 +209,8 @@ class DataBase
     function create_new_user(string $token)
     {
         $this->db->exec('begin');
-        $stmt = $this->db->prepare("INSERT into user(token, last_access_time, room_id, player_id, is_gm, win, ready)"
-            . " values(:token, :last_access_time, NULL, NULL, 0, 0, 0)");
+        $stmt = $this->db->prepare("INSERT into user(token, last_access_time, room_id, player_id, is_gm, win, ready, username)"
+            . " values(:token, :last_access_time, NULL, NULL, 0, 0, 0, NULL)");
         $stmt->bindValue(':token', $token, SQLITE3_TEXT);
         $stmt->bindValue(':last_access_time', time(), SQLITE3_INTEGER);
         $result = $stmt->execute();
@@ -506,6 +506,31 @@ class DataBase
             return 0;
         }
         return $result->fetchArray()[0];
+    }
+
+    // ユーザ名取得
+    function get_user_name(string $token)
+    {
+        $stmt = $this->db->prepare("select username, player_id from user where token = :token");
+        $stmt->bindValue(':token', $token, SQLITE3_TEXT);
+        $result = $stmt->execute();
+        if ($result === false) {
+            return null;
+        }
+        return $result->fetchArray()[0] ?? sprintf("プレイヤー#%d", $result->fetchArray()[1]);
+    }
+
+    // ユーザ名設定
+    function set_user_name(string $token, string $username)
+    {
+        $stmt = $this->db->prepare("UPDATE user set username = :username where token = :token");
+        $stmt->bindValue(':token', $token, SQLITE3_TEXT);
+        $stmt->bindValue(':username', $username, SQLITE3_TEXT);
+        $result = $stmt->execute();
+        if ($result === false) {
+            return false;
+        }
+        return true;
     }
 }
 

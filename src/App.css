@@ -110,3 +110,24 @@ li {
         opacity: 1;
     }
 }
+
+#top_dialog {
+    border-color: #aaa;
+    border-radius: 1em;
+}
+
+#top_dialog_inputs {
+    display: grid;
+    grid-template-columns: 8em 1fr;
+    gap: .5em;
+}
+
+#top_dialog>form {
+    text-align: center;
+}
+
+#top_dialog>form>button {
+    margin: 1em;
+    padding: 1em;
+    width: 5em;
+}
