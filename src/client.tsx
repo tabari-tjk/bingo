@@ -65,9 +65,11 @@ export default function Client({ roomId, token, backCallback }: { "roomId": numb
 
   const animation_container_ref = useRef<HTMLDivElement | null>(null);
   const client_animation_draw_ref = useRef<HTMLDivElement | null>(null);
+  const client_draw_value_ref = useRef<HTMLDivElement | null>(null);
   const client_animation_ready_ref = useRef<HTMLDivElement | null>(null);
   const client_animation_bingo_ref = useRef<HTMLDivElement | null>(null);
   const client_animation_draw_img_ref = useRef<HTMLImageElement | null>(null);
+  const [client_draw_value, setClientDrawValue] = useState("");
   const [animation_running, setAnimationRunning] = useState(false);
 
   useEffect(() => {
@@ -161,11 +163,22 @@ export default function Client({ roomId, token, backCallback }: { "roomId": numb
     }
     const choose = events.shift() as number; // SAFETY: lengthはチェック済み
     SetEvents([...events]);
+    setClientDrawValue(choose.toString());
     const idx = board.indexOf(choose);
     if (idx !== -1) {
       setAnimationRunning(true);
       animation_container_ref?.current?.classList.add("visible");
       client_animation_draw_ref?.current?.classList.add("visible");
+      const value_anim = [
+        { transform: "scale(0%)" },
+        { transform: "scale(0%)" },
+        { transform: "scale(100%)" },
+        { transform: "scale(100%)" },
+      ];
+      client_draw_value_ref?.current?.animate(value_anim, {
+        duration: 4000,
+        iterations: 1,
+      }).play();
       const draw_anim = [
         { transform: "rotateZ(0deg)" },
         { transform: "rotateZ(10deg)" },
@@ -189,7 +202,7 @@ export default function Client({ roomId, token, backCallback }: { "roomId": numb
         { transform: "rotateZ(0deg)", opacity: "0" },
       ];
       client_animation_draw_img_ref?.current?.animate(draw_anim, {
-        duration: 3000,
+        duration: 4000,
         iterations: 1,
       }).addEventListener("finish", () => {
         client_animation_draw_ref?.current?.classList.remove("visible");
@@ -303,6 +316,7 @@ export default function Client({ roomId, token, backCallback }: { "roomId": numb
       <div id="client_animation_container" ref={animation_container_ref}>
         <div id="client_animation_draw" ref={client_animation_draw_ref}>
           <img id="client_animation_draw_img" src="rdesign_09606.png" ref={client_animation_draw_img_ref} alt="ビンゴマシン" />
+          <p id="client_draw_value" ref={client_draw_value_ref}>{client_draw_value}</p>
         </div>
         <div id="client_animation_ready" ref={client_animation_ready_ref}>
           リーチ！
