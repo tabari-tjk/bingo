@@ -103,7 +103,7 @@ function App() {
           <button onClick={() => {
             dialog_ref?.current?.showModal();
           }} className={`top_button`}>部屋に入る</button>
-          <button onClick={() => setGameState("DEBUG")}>debug client</button>
+          {process.env.NODE_ENV === "development" && <button onClick={() => setGameState("DEBUG")}>debug client</button>}
         </div>
         <dialog id="top_dialog" ref={dialog_ref}>
           <p>ゲームマスターから受け取った部屋IDと、プレイヤー名を入力してください</p>
