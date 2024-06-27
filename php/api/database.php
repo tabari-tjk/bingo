@@ -19,7 +19,15 @@ class DataBase
         $this->db->exec('CREATE TABLE IF NOT EXISTS user(token text primary key, last_access_time integer, room_id integer, player_id integer, is_gm integer, win integer, ready integer, username text)');
         $this->db->exec('CREATE TABLE IF NOT EXISTS bingocard(token text, pos integer not null, bingo_number integer, primary key(token, pos))');
         $this->db->exec('CREATE TABLE IF NOT EXISTS bingochoosed(id integer primary key autoincrement, room_id integer, bingo_number integer)');
+    }
+    function get_db()
+    {
+        return $this->db;
+    }
 
+    // 一定時間利用のないユーザや部屋の削除
+    function clean_rooms_and_users()
+    {
         $this->db->exec('begin');
         // USER_INVALIDATE_SECS秒間ハートビートのないユーザを削除
         $this->db->exec("DELETE from user where last_access_time < " . (time() - USER_INVALIDATE_SECS));
@@ -29,10 +37,6 @@ class DataBase
         $this->db->exec("DELETE from bingochoosed where not exists (select room_id from user where user.room_id = bingochoosed.room_id)");
         $this->db->exec("DELETE from bingocard where not exists (select token from user where user.token = bingocard.token)");
         $this->db->exec('commit');
-    }
-    function get_db()
-    {
-        return $this->db;
     }
 
     /// 有効な部屋IDの取得

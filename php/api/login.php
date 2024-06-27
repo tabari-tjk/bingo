@@ -12,6 +12,7 @@ if ($params === null) {
     print json_encode("Error");
     exit;
 }
+$db->clean_rooms_and_users();
 
 $token = null;
 $gm = false;
