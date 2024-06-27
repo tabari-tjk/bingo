@@ -62,9 +62,14 @@ export default function Client({ roomId, token, backCallback }: { "roomId": numb
   const [last_msg, setLastMsg] = useState(0);
   const [last_evt, setLastEvt] = useState(0);
   const [playerCounts, setPlayerCounts] = useState([0, 0, 0]);
+
   const animation_container_ref = useRef<HTMLDivElement | null>(null);
+  const client_animation_draw_ref = useRef<HTMLDivElement | null>(null);
+  const client_animation_ready_ref = useRef<HTMLDivElement | null>(null);
+  const client_animation_bingo_ref = useRef<HTMLDivElement | null>(null);
   const client_animation_draw_img_ref = useRef<HTMLImageElement | null>(null);
   const [animation_running, setAnimationRunning] = useState(false);
+
   useEffect(() => {
     if (room_id === null) {
       return;
@@ -160,6 +165,7 @@ export default function Client({ roomId, token, backCallback }: { "roomId": numb
     if (idx !== -1) {
       setAnimationRunning(true);
       animation_container_ref?.current?.classList.add("visible");
+      client_animation_draw_ref?.current?.classList.add("visible");
       const draw_anim = [
         { transform: "rotateZ(0deg)" },
         { transform: "rotateZ(10deg)" },
@@ -186,20 +192,51 @@ export default function Client({ roomId, token, backCallback }: { "roomId": numb
         duration: 3000,
         iterations: 1,
       }).addEventListener("finish", () => {
+        client_animation_draw_ref?.current?.classList.remove("visible");
         board[idx] = -choose;
         SetBoard([...board]);
-        const maxhit = boardMaxHit(board, choose);
-        if (maxhit === 4) {
-          window.alert("リーチ！");
+        const maxhit = boardMaxHit(board, choose); if (maxhit === 5) {
+          //window.alert("ビンゴ！");
+          client_animation_bingo_ref?.current?.classList.add("visible");
+          const ready_anim = [
+            { transform: "translateX(100vw)" },
+            { transform: "translateX(-100vw)" }
+          ];
+          client_animation_bingo_ref?.current?.animate(ready_anim, {
+            duration: 3000,
+            iterations: 1,
+          }).addEventListener("finish", () => {
+            setReadyClassName("");
+            setWinClassName("");
+            animation_container_ref?.current?.classList.remove("visible");
+            client_animation_bingo_ref?.current?.classList.remove("visible");
+            setAnimationRunning(false);
+          });
         }
-        else if (maxhit === 5) {
-          window.alert("ビンゴ！");
+        else if (maxhit === 4) {
+          //window.alert("リーチ！");
+          client_animation_ready_ref?.current?.classList.add("visible");
+          const ready_anim = [
+            { transform: "translateX(100vw)" },
+            { transform: "translateX(-100vw)" }
+          ];
+          client_animation_ready_ref?.current?.animate(ready_anim, {
+            duration: 3000,
+            iterations: 1,
+          }).addEventListener("finish", () => {
+            setReadyClassName("");
+            setWinClassName("");
+            animation_container_ref?.current?.classList.remove("visible");
+            client_animation_ready_ref?.current?.classList.remove("visible");
+            setAnimationRunning(false);
+          });
         }
-        else { }
-        setReadyClassName("");
-        setWinClassName("");
-        animation_container_ref?.current?.classList.remove("visible");
-        setAnimationRunning(false);
+        else {
+          setReadyClassName("");
+          setWinClassName("");
+          animation_container_ref?.current?.classList.remove("visible");
+          setAnimationRunning(false);
+        }
       });
     }
   }, [events, animation_running, board]);
@@ -264,8 +301,14 @@ export default function Client({ roomId, token, backCallback }: { "roomId": numb
       <MessageList messages={messages} />
       <WakeLock />
       <div id="client_animation_container" ref={animation_container_ref}>
-        <div id="client_animation_draw">
+        <div id="client_animation_draw" ref={client_animation_draw_ref}>
           <img id="client_animation_draw_img" src="rdesign_09606.png" ref={client_animation_draw_img_ref} alt="ビンゴマシン" />
+        </div>
+        <div id="client_animation_ready" ref={client_animation_ready_ref}>
+          リーチ！
+        </div>
+        <div id="client_animation_bingo" ref={client_animation_bingo_ref}>
+          ビンゴ！
         </div>
       </div>
     </div>
