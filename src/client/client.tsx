@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 import "./client.css";
-import WakeLock from "./wakelock.tsx";
+import WakeLock from "../wakelock.tsx";
 
 const linefuncs: ((i: number) => boolean)[] = [
   i => i % 5 === 0,

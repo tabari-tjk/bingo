@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import "./master.css";
-import WakeLock from "./wakelock.tsx";
+import WakeLock from "../wakelock.tsx";
 
 type RoomState = "Joinable" | "StartGame" | "Finished";
 

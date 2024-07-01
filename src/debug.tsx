@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import Client from "./client.tsx";
+import Client from "./client/client.tsx";
 
 export default function DebugClient({ clientNum }: { clientNum: number }) {
     const [room_id, setRoomId] = useState<number>(0);

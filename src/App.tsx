@@ -1,8 +1,8 @@
 import React, { useEffect, useRef } from 'react';
 import './App.css';
 import { useState } from 'react';
-import Master from './master.tsx';
-import Client from './client.tsx';
+import Master from './master/master.tsx';
+import Client from './client/client.tsx';
 import DebugClient from './debug.tsx';
 
 type GameState = "BEFORELOAD" | "TOP" | "MASTER" | "CLIENT" | "DEBUG";
