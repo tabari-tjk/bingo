@@ -16,6 +16,7 @@ class DataBase
         // テーブル作成
         $this->db->exec('CREATE TABLE IF NOT EXISTS room(id INTEGER PRIMARY KEY AUTOINCREMENT, last_access_time integer, joinable integer, finished integer)');
         $this->db->exec("CREATE table if not exists room_message(id integer primary key autoincrement, room_id integer not null, msg text)");
+        $this->db->exec("CREATE table if not exists room_status(room_id integer primary key, user_count integer, ready_count integer, win_count integer)");
         $this->db->exec('CREATE TABLE IF NOT EXISTS user(token text primary key, last_access_time integer, room_id integer, player_id integer, is_gm integer, win integer, ready integer, username text)');
         $this->db->exec('CREATE TABLE IF NOT EXISTS bingocard(token text, pos integer not null, bingo_number integer, primary key(token, pos))');
         $this->db->exec('CREATE TABLE IF NOT EXISTS bingochoosed(id integer primary key autoincrement, room_id integer, bingo_number integer)');
@@ -33,9 +34,12 @@ class DataBase
         $this->db->exec("DELETE from user where last_access_time < " . (time() - USER_INVALIDATE_SECS));
         // ユーザのいない部屋を削除
         $this->db->exec("DELETE from room_message where not exists (select room_id from user where user.room_id = room_message.room_id)");
+        $this->db->exec("DELETE from room_status where not exists (select room_id from user where user.room_id = room_status.room_id)");
         $this->db->exec("DELETE from room where not exists (select room_id from user where user.room_id = room.id)");
         $this->db->exec("DELETE from bingochoosed where not exists (select room_id from user where user.room_id = bingochoosed.room_id)");
         $this->db->exec("DELETE from bingocard where not exists (select token from user where user.token = bingocard.token)");
+        // GMがいない部屋には入れない
+        $this->db->exec("UPDATE room set joinable = 0, finished = 1 where not exists (select room_id from user where user.room_id = room.id and is_gm != 0)");
         $this->db->exec('commit');
     }
 
@@ -94,6 +98,10 @@ class DataBase
 
         $stmt = $this->db->prepare("UPDATE user set room_id = :room_id, is_gm = 1, player_id = 0 where token = :token");
         $stmt->bindValue(':token', $token, SQLITE3_TEXT);
+        $stmt->bindValue(':room_id', $room_id, SQLITE3_INTEGER);
+        $stmt->execute();
+
+        $stmt = $this->db->prepare("INSERT into room_status(room_id, user_count, ready_count, win_count) values(:room_id, 0, 0, 0)");
         $stmt->bindValue(':room_id', $room_id, SQLITE3_INTEGER);
         $stmt->execute();
         return $room_id;
@@ -247,6 +255,10 @@ class DataBase
         }
         $player_id = $this->get_player_id($token);
         $this->create_bingo_card($token);
+
+        $stmt = $this->db->prepare("UPDATE room_status set user_count = user_count + 1 where room_id = :room_id");
+        $stmt->bindValue(':room_id', $room_id, SQLITE3_INTEGER);
+        $result = $stmt->execute();
 
         return $player_id;
     }
@@ -464,22 +476,31 @@ class DataBase
             }
         }
 
+        // 勝利者数、リーチ者数を更新
+        $stmt = $this->db->prepare("UPDATE room_status set win_count = (SELECT count(*) from user where user.room_id = :room_id and win != 0), ready_count = (SELECT count(*) from user where user.room_id = :room_id and win = 0 and ready != 0) where room_id = :room_id");
+        $stmt->bindValue(':room_id', $room_id, SQLITE3_TEXT);
+        $result = $stmt->execute();
+
         return [$bingo_number, $hit_players, $ready_players, $win_players];
     }
 
     // 全プレイヤーが上がったかチェック
     function is_all_players_win(int $room_id)
     {
-        $stmt = $this->db->prepare("select count(*) from user where room_id = :room_id and is_gm = 0 and win = 0");
+        $stmt = $this->db->prepare("select user_count, win_count from room_status where room_id = :room_id");
         $stmt->bindValue(':room_id', $room_id, SQLITE3_INTEGER);
         $result = $stmt->execute();
-        return $result !== false && $result->fetchArray()[0] == 0;
+        if ($result === false) {
+            return false;
+        }
+        $result = $result->fetchArray();
+        return $result[0] === $result[1];
     }
 
     // 部屋に参加しているGM以外の人数を取得
     function get_user_count(int $room_id)
     {
-        $stmt = $this->db->prepare("select count(*) from user where room_id = :room_id and is_gm = 0");
+        $stmt = $this->db->prepare("select user_count from room_status where room_id = :room_id");
         $stmt->bindValue(':room_id', $room_id, SQLITE3_INTEGER);
         $result = $stmt->execute();
         if ($result === false) {
@@ -491,7 +512,7 @@ class DataBase
     // 部屋に参加しているGM以外の、上がった人数を取得
     function get_win_user_count(int $room_id)
     {
-        $stmt = $this->db->prepare("select count(*) from user where room_id = :room_id and is_gm = 0 and win != 0");
+        $stmt = $this->db->prepare("select win_count from room_status where room_id = :room_id");
         $stmt->bindValue(':room_id', $room_id, SQLITE3_INTEGER);
         $result = $stmt->execute();
         if ($result === false) {
@@ -503,7 +524,7 @@ class DataBase
     // 部屋に参加しているGM以外の、上がっておらずリーチしている人数を取得
     function get_ready_user_count(int $room_id)
     {
-        $stmt = $this->db->prepare("select count(*) from user where room_id = :room_id and is_gm = 0 and win = 0 and ready != 0");
+        $stmt = $this->db->prepare("select ready_count from room_status where room_id = :room_id");
         $stmt->bindValue(':room_id', $room_id, SQLITE3_INTEGER);
         $result = $stmt->execute();
         if ($result === false) {
