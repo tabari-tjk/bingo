@@ -13,8 +13,8 @@ class GameState {
     user_count: number;
     win_user_count: number;
     ready_user_count: number;
-    win_users: string[];
-    ready_users: string[];
+    win_users: Set<string>;
+    ready_users: Set<string>;
     constructor() {
         this.room_id = null;
         this.join_member_num = 0;
@@ -24,8 +24,8 @@ class GameState {
         this.user_count = 0;
         this.win_user_count = 0;
         this.ready_user_count = 0;
-        this.win_users = [];
-        this.ready_users = [];
+        this.win_users = new Set();
+        this.ready_users = new Set();
     }
 }
 
@@ -153,8 +153,9 @@ export default function Master({ token, backCallback }: { token: string, backCal
         })
             .then(r => r.json())
             .then(data => {
-                gameState.ready_users = data.ready_players;
-                gameState.win_users = data.win_players;
+                data.ready_players.forEach((p: string) => gameState.ready_users.add(p));
+                data.win_players.forEach((p: string) => gameState.win_users.add(p));
+                gameState.win_users.forEach(n => gameState.ready_users.delete(n));
                 setGameState({ ...gameState });
             });
     };
@@ -168,10 +169,10 @@ export default function Master({ token, backCallback }: { token: string, backCal
                     部屋ID:「{gameState.room_id}」<br />
                     参加人数: {gameState.user_count}人<br />
                     リーチ人数: {gameState.ready_user_count}人（{
-                        gameState.ready_users.join(", ")
+                        Array.from(gameState.ready_users).join(", ")
                     }）<br />
                     ビンゴ人数: {gameState.win_user_count}人（{
-                        gameState.win_users.join(", ")
+                        Array.from(gameState.win_users).join(", ")
                     }）
                 </p>
                 {
