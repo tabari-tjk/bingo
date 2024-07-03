@@ -62,10 +62,10 @@ export default function Master({ token, backCallback }: { token: string, backCal
                         return 0;// どちらもnullなら等しいとする
                     }
                     if (a[status_sort_key] === null) {
-                        return 1 * status_sort_order;// aがnullならb
+                        return 1;// aがnullならb
                     }
                     if (b[status_sort_key] === null) {
-                        return -1 * status_sort_order;// bがnullならa
+                        return -1;// bがnullならa
                     }
                     if (typeof a[status_sort_key] === "number" && typeof b[status_sort_key] === "number") {
                         return (a[status_sort_key] - b[status_sort_key]) * status_sort_order; // どちらもnullでないなら通常の比較
