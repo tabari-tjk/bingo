@@ -85,6 +85,7 @@ export default function Master({ token, backCallback }: { token: string, backCal
             setStatusSortOrder(status_sort_order < 0 ? 1 : -1);
         } else {
             setStatusSortKey(key);
+            setStatusSortOrder(1);
         }
     };
 
