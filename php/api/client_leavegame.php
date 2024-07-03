@@ -20,8 +20,8 @@ $retval = false;
 if ($room_id !== null && !$is_gm) {
     $player_id = $db->get_player_id($token);
     if ($player_id !== null) {
-        $db->user_leave_room($token);
         $db->add_room_message($room_id, sprintf("%sさんは退出しました。", $db->get_user_name_by_pid($room_id, $player_id)));
+        $db->user_leave_room($token);
         $retval = true;
     }
 }
