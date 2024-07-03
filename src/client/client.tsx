@@ -165,50 +165,53 @@ export default function Client({ roomId, token, backCallback }: { "roomId": numb
     SetEvents([...events]);
     setClientDrawValue(choose.toString());
     const idx = board.indexOf(choose);
-    if (idx !== -1) {
-      setAnimationRunning(true);
-      animation_container_ref?.current?.classList.add("visible");
-      client_animation_draw_ref?.current?.classList.add("visible");
-      const value_anim = [
-        { transform: "scale(0%)" },
-        { transform: "scale(0%)" },
-        { transform: "scale(100%)" },
-        { transform: "scale(100%)" },
-      ];
-      client_draw_value_ref?.current?.animate(value_anim, {
-        duration: 4000,
-        iterations: 1,
-      }).play();
-      const draw_anim = [
-        { transform: "rotateZ(0deg)" },
-        { transform: "rotateZ(10deg)" },
-        { transform: "rotateZ(-10deg)" },
-        { transform: "rotateZ(10deg)" },
-        { transform: "rotateZ(-10deg)" },
-        { transform: "rotateZ(10deg)" },
-        { transform: "rotateZ(-10deg)" },
-        { transform: "rotateZ(10deg)" },
-        { transform: "rotateZ(-10deg)" },
-        { transform: "rotateZ(10deg)", opacity: "1" },
-        { transform: "rotateZ(-10deg)" },
-        { transform: "rotateZ(10deg)" },
-        { transform: "rotateZ(-10deg)" },
-        { transform: "rotateZ(10deg)" },
-        { transform: "rotateZ(-10deg)" },
-        { transform: "rotateZ(10deg)" },
-        { transform: "rotateZ(-10deg)" },
-        { transform: "rotateZ(10deg)" },
-        { transform: "rotateZ(-10deg)" },
-        { transform: "rotateZ(0deg)", opacity: "0" },
-      ];
-      client_animation_draw_img_ref?.current?.animate(draw_anim, {
-        duration: 4000,
-        iterations: 1,
-      }).addEventListener("finish", () => {
-        client_animation_draw_ref?.current?.classList.remove("visible");
+    setAnimationRunning(true);
+    animation_container_ref?.current?.classList.add("visible");
+    client_animation_draw_ref?.current?.classList.add("visible");
+    const value_anim = [
+      { transform: "scale(0%)" },
+      { transform: "scale(0%)" },
+      { transform: "scale(100%)" },
+      { transform: "scale(100%)" },
+    ];
+    client_draw_value_ref?.current?.animate(value_anim, {
+      duration: 4000,
+      iterations: 1,
+    }).play();
+    const draw_anim = [
+      { transform: "rotateZ(0deg)" },
+      { transform: "rotateZ(10deg)" },
+      { transform: "rotateZ(-10deg)" },
+      { transform: "rotateZ(10deg)" },
+      { transform: "rotateZ(-10deg)" },
+      { transform: "rotateZ(10deg)" },
+      { transform: "rotateZ(-10deg)" },
+      { transform: "rotateZ(10deg)" },
+      { transform: "rotateZ(-10deg)" },
+      { transform: "rotateZ(10deg)", opacity: "1" },
+      { transform: "rotateZ(-10deg)" },
+      { transform: "rotateZ(10deg)" },
+      { transform: "rotateZ(-10deg)" },
+      { transform: "rotateZ(10deg)" },
+      { transform: "rotateZ(-10deg)" },
+      { transform: "rotateZ(10deg)" },
+      { transform: "rotateZ(-10deg)" },
+      { transform: "rotateZ(10deg)" },
+      { transform: "rotateZ(-10deg)" },
+      { transform: "rotateZ(0deg)", opacity: "0" },
+    ];
+    client_animation_draw_img_ref?.current?.animate(draw_anim, {
+      duration: 4000,
+      iterations: 1,
+    }).addEventListener("finish", () => {
+      client_animation_draw_ref?.current?.classList.remove("visible");
+      if (idx !== -1) {
+        setReadyClassName("");
+        setWinClassName("");
         board[idx] = -choose;
         SetBoard([...board]);
-        const maxhit = boardMaxHit(board, choose); if (maxhit === 5) {
+        const maxhit = boardMaxHit(board, choose);
+        if (maxhit === 5) {
           //window.alert("ビンゴ！");
           client_animation_bingo_ref?.current?.classList.add("visible");
           const ready_anim = [
@@ -219,8 +222,6 @@ export default function Client({ roomId, token, backCallback }: { "roomId": numb
             duration: 3000,
             iterations: 1,
           }).addEventListener("finish", () => {
-            setReadyClassName("");
-            setWinClassName("");
             animation_container_ref?.current?.classList.remove("visible");
             client_animation_bingo_ref?.current?.classList.remove("visible");
             setAnimationRunning(false);
@@ -237,21 +238,20 @@ export default function Client({ roomId, token, backCallback }: { "roomId": numb
             duration: 3000,
             iterations: 1,
           }).addEventListener("finish", () => {
-            setReadyClassName("");
-            setWinClassName("");
             animation_container_ref?.current?.classList.remove("visible");
             client_animation_ready_ref?.current?.classList.remove("visible");
             setAnimationRunning(false);
           });
         }
         else {
-          setReadyClassName("");
-          setWinClassName("");
           animation_container_ref?.current?.classList.remove("visible");
           setAnimationRunning(false);
         }
-      });
-    }
+      } else {
+        animation_container_ref?.current?.classList.remove("visible");
+        setAnimationRunning(false);
+      }
+    });
   }, [events, animation_running, board]);
 
   // ヒット・ビンゴの点滅演出同期用ステート
