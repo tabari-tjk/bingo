@@ -18,6 +18,7 @@ class DataBase
         $this->db->exec("CREATE table if not exists room_message(id integer primary key autoincrement, room_id integer not null, msg text)");
         $this->db->exec("CREATE table if not exists room_status(room_id integer primary key, user_count integer, ready_count integer, win_count integer, turn integer)");
         $this->db->exec('CREATE TABLE IF NOT EXISTS user(token text primary key, last_access_time integer, room_id integer, player_id integer, is_gm integer, win integer, ready integer, username text, ready_turn integer, win_turn integer, rank integer)');
+        $this->db->exec('CREATE TABLE IF NOT EXISTS user_status(room_id integer, player_id integer, win integer, ready integer, username text, ready_turn integer, win_turn integer, rank integer, primary key(room_id, player_id))');
         $this->db->exec('CREATE TABLE IF NOT EXISTS bingocard(token text, pos integer not null, bingo_number integer, primary key(token, pos))');
         $this->db->exec('CREATE TABLE IF NOT EXISTS bingochoosed(id integer primary key autoincrement, room_id integer, bingo_number integer)');
     }
@@ -36,6 +37,7 @@ class DataBase
         $this->db->exec("DELETE from room_message where not exists (select room_id from user where user.room_id = room_message.room_id)");
         $this->db->exec("DELETE from room_status where not exists (select room_id from user where user.room_id = room_status.room_id)");
         $this->db->exec("DELETE from room where not exists (select room_id from user where user.room_id = room.id)");
+        $this->db->exec("DELETE from user_status where not exists (select room_id from user where user.room_id = user_status.room_id)");
         $this->db->exec("DELETE from bingochoosed where not exists (select room_id from user where user.room_id = bingochoosed.room_id)");
         $this->db->exec("DELETE from bingocard where not exists (select token from user where user.token = bingocard.token)");
         // GMがいない部屋には入れない
@@ -520,6 +522,14 @@ class DataBase
         $stmt->bindValue(':room_id', $room_id, SQLITE3_TEXT);
         $result = $stmt->execute();
 
+        // ゲームログ用のステータスを更新
+        $stmt = $this->db->prepare("INSERT or replace into user_status(room_id, player_id, win, ready, username, ready_turn, win_turn, rank)
+            select room_id, player_id, win, ready, username, ready_turn, win_turn, rank
+            from user
+            where user.room_id = :room_id and user.is_gm = 0");
+        $stmt->bindValue(':room_id', $room_id, SQLITE3_TEXT);
+        $result = $stmt->execute();
+
         return [$bingo_number, $hit_players, $ready_players, $win_players];
     }
 
@@ -615,7 +625,7 @@ class DataBase
     {
         $info = [];
         // CREATE TABLE IF NOT EXISTS user(token text primary key, last_access_time integer, room_id integer, player_id integer, is_gm integer, win integer, ready integer, username text, ready_turn integer, win_turn integer, rank integer)
-        $stmt = $this->db->prepare("SELECT player_id, username, ready, win, ready_turn, win_turn, rank from user, room_status where user.room_id = room_status.room_id and user.room_id = :room_id and user.is_gm = 0");
+        $stmt = $this->db->prepare("SELECT player_id, username, ready, win, ready_turn, win_turn, rank from user_status where user_status.room_id = :room_id");
         $stmt->bindValue(':room_id', $room_id, SQLITE3_INTEGER);
         $result = $stmt->execute();
         if ($result === false) {
