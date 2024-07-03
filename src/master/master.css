@@ -40,3 +40,15 @@
     min-width: 15em;
     margin: 1rem;
 }
+
+#master_player_status_table {
+    text-align: center;
+}
+
+#master_player_status_table,
+#master_player_status_table th,
+#master_player_status_table td {
+    border: 1px dotted white;
+    border-collapse: collapse;
+    padding: 0 1em;
+}

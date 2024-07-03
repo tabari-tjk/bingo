@@ -29,8 +29,62 @@ class GameState {
     }
 }
 
+type PlayerStatus = {
+    player_id: number;
+    username: string;
+    ready: number;
+    win: number;
+    ready_turn: number | null;
+    win_turn: number | null;
+    rank: number | null;
+};
+
 export default function Master({ token, backCallback }: { token: string, backCallback: Function }) {
     const [gameState, setGameState] = useState<GameState>(new GameState());
+    const [player_status, setPlayerStatus] = useState<PlayerStatus[]>([]);
+    const updateAllPlayerStatus = () => {
+        // 全体ステータス更新
+        fetch("api/master_get_all_players_status.php", {
+            method: "POST",
+            credentials: 'include',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ token: token }),
+        })
+            .then(r => r.json())
+            .then((data: PlayerStatus[]) => {
+                // ソート優先度
+                // 順位
+                // 初リーチターン
+                data.sort((a, b) => {
+                    if (a.ready_turn === null && b.ready_turn === null) {
+                        return 0;// どちらもnullなら等しいとする
+                    }
+                    if (a.ready_turn === null) {
+                        return 1;// aがnullならb
+                    }
+                    if (b.ready_turn === null) {
+                        return -1;// bがnullならa
+                    }
+                    return a.ready_turn - b.ready_turn; // どちらもnullでないなら通常の比較
+                });
+                data.sort((a, b) => {
+                    if (a.rank === null && b.rank === null) {
+                        return 0;// どちらもnullなら等しいとする
+                    }
+                    if (a.rank === null) {
+                        return 1;// aがnullならb
+                    }
+                    if (b.rank === null) {
+                        return -1;// bがnullならa
+                    }
+                    return a.rank - b.rank; // どちらもnullでないなら通常の比較
+                });
+                setPlayerStatus(data);
+            })
+            .catch(() => { });
+    };
     useEffect(() => {
         if (gameState.room_id !== null) {
             return;
@@ -49,6 +103,7 @@ export default function Master({ token, backCallback }: { token: string, backCal
             .then(data => {
                 gameState.room_id = data;
                 setGameState({ ...gameState });
+                updateAllPlayerStatus();
             })
             .catch(() => { });
         return () => {
@@ -122,6 +177,7 @@ export default function Master({ token, backCallback }: { token: string, backCal
                 gameState.room_state = "StartGame";
                 setGameState({ ...gameState });
                 setGameStarted(true);
+                updateAllPlayerStatus();
             });
         }
     };
@@ -159,6 +215,7 @@ export default function Master({ token, backCallback }: { token: string, backCal
                 data.win_players.forEach((p: string) => gameState.win_users.add(p));
                 gameState.win_users.forEach(n => gameState.ready_users.delete(n));
                 setGameState({ ...gameState });
+                updateAllPlayerStatus();
             })
             .finally(() => {
                 choosing_dialog_ref?.current?.close();
@@ -188,6 +245,30 @@ export default function Master({ token, backCallback }: { token: string, backCal
                     </>
                 }
             </fieldset>
+            <table id="master_player_status_table">
+                <thead>
+                    <tr>
+                        <th>順位</th>
+                        <th>名前</th>
+                        <th>リーチ数</th>
+                        <th>ビンゴ数</th>
+                        <th>初リーチ<wbr />ターン</th>
+                        <th>初ビンゴ<wbr />ターン</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {player_status.map(pl => {
+                        return (<tr key={pl.player_id}>
+                            <td>{pl.rank ?? "-"}</td>
+                            <td>{pl.username}</td>
+                            <td>{pl.ready}</td>
+                            <td>{pl.win}</td>
+                            <td>{pl.ready_turn ?? "-"}</td>
+                            <td>{pl.win_turn ?? "-"}</td>
+                        </tr>);
+                    })}
+                </tbody>
+            </table>
             <MessageList messages={gameState.room_message} />
             {
                 //gameState.room_id !== null && <Client roomId={gameState.room_id} token={token} />

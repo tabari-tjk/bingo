@@ -16,8 +16,8 @@ class DataBase
         // テーブル作成
         $this->db->exec('CREATE TABLE IF NOT EXISTS room(id INTEGER PRIMARY KEY AUTOINCREMENT, last_access_time integer, joinable integer, finished integer)');
         $this->db->exec("CREATE table if not exists room_message(id integer primary key autoincrement, room_id integer not null, msg text)");
-        $this->db->exec("CREATE table if not exists room_status(room_id integer primary key, user_count integer, ready_count integer, win_count integer)");
-        $this->db->exec('CREATE TABLE IF NOT EXISTS user(token text primary key, last_access_time integer, room_id integer, player_id integer, is_gm integer, win integer, ready integer, username text)');
+        $this->db->exec("CREATE table if not exists room_status(room_id integer primary key, user_count integer, ready_count integer, win_count integer, turn integer)");
+        $this->db->exec('CREATE TABLE IF NOT EXISTS user(token text primary key, last_access_time integer, room_id integer, player_id integer, is_gm integer, win integer, ready integer, username text, ready_turn integer, win_turn integer, rank integer)');
         $this->db->exec('CREATE TABLE IF NOT EXISTS bingocard(token text, pos integer not null, bingo_number integer, primary key(token, pos))');
         $this->db->exec('CREATE TABLE IF NOT EXISTS bingochoosed(id integer primary key autoincrement, room_id integer, bingo_number integer)');
     }
@@ -101,7 +101,7 @@ class DataBase
         $stmt->bindValue(':room_id', $room_id, SQLITE3_INTEGER);
         $stmt->execute();
 
-        $stmt = $this->db->prepare("INSERT into room_status(room_id, user_count, ready_count, win_count) values(:room_id, 0, 0, 0)");
+        $stmt = $this->db->prepare("INSERT into room_status(room_id, user_count, ready_count, win_count, turn) values(:room_id, 0, 0, 0, 0)");
         $stmt->bindValue(':room_id', $room_id, SQLITE3_INTEGER);
         $stmt->execute();
         return $room_id;
@@ -246,7 +246,7 @@ class DataBase
         if (!$this->is_room_joinable($room_id)) {
             return null;
         }
-        $stmt = $this->db->prepare("UPDATE user set room_id = :room_id, player_id = (select max(player_id) from user where room_id = :room_id)+1, is_gm = 0, win = 0, ready = 0 where token = :token");
+        $stmt = $this->db->prepare("UPDATE user set room_id = :room_id, player_id = (select max(player_id) from user where room_id = :room_id)+1, is_gm = 0, win = 0, ready = 0, ready_turn = null, win_turn = null, rank = null where token = :token");
         $stmt->bindValue(':token', $token, SQLITE3_TEXT);
         $stmt->bindValue(':room_id', $room_id, SQLITE3_INTEGER);
         $result = $stmt->execute();
@@ -347,6 +347,36 @@ class DataBase
         $hit_players = [];
         $win_players = [];
         $ready_players = [];
+
+        // 現在ターン数のインクリメント
+        $stmt = $this->db->prepare("UPDATE room_status set turn = turn + 1 where room_id = :room_id");
+        $stmt->bindValue(':room_id', $room_id, SQLITE3_INTEGER);
+        $stmt->execute();
+        // 現在ターン数取得
+        $stmt = $this->db->prepare("SELECT turn from room_status where room_id = :room_id");
+        $stmt->bindValue(':room_id', $room_id, SQLITE3_INTEGER);
+        $result = $stmt->execute();
+        if ($result === false) {
+            return null;
+        }
+        $result = $result->fetchArray();
+        if ($result === false) {
+            return null;
+        }
+        $turn = $result[0];
+
+        // ここでビンゴした場合の順位取得
+        $stmt = $this->db->prepare("SELECT win_count from room_status where room_id = :room_id");
+        $stmt->bindValue(':room_id', $room_id, SQLITE3_INTEGER);
+        $result = $stmt->execute();
+        if ($result === false) {
+            return null;
+        }
+        $result = $result->fetchArray();
+        if ($result === false) {
+            return null;
+        }
+        $next_win_rank = $result[0] + 1;
 
         // 未勝利のプレイヤーの未ヒットマスから抽選
         // 高々75個なので、order by random()の遅さは気にしないでよい
@@ -463,13 +493,22 @@ class DataBase
 
             if ($max_hit == 4) {
                 array_push($ready_players, $this->get_user_name_by_pid($room_id, $player_id));
-                $stmt = $this->db->prepare("UPDATE user set ready = 1 where token = :token");
+                $stmt = $this->db->prepare("UPDATE user set ready = ready + 1 where token = :token");
                 $stmt->bindValue(':token', $token, SQLITE3_TEXT);
+                $result = $stmt->execute();
+                $stmt = $this->db->prepare("UPDATE user set ready_turn = :turn where token = :token and ready_turn is null");
+                $stmt->bindValue(':token', $token, SQLITE3_TEXT);
+                $stmt->bindValue(':turn', $turn, SQLITE3_INTEGER);
                 $result = $stmt->execute();
             } else if ($max_hit == 5) {
                 array_push($win_players, $this->get_user_name_by_pid($room_id, $player_id));
-                $stmt = $this->db->prepare("UPDATE user set win = 1 where token = :token");
+                $stmt = $this->db->prepare("UPDATE user set win = win + 1, rank = :rank where token = :token");
                 $stmt->bindValue(':token', $token, SQLITE3_TEXT);
+                $stmt->bindValue(':rank', $next_win_rank, SQLITE3_INTEGER);
+                $result = $stmt->execute();
+                $stmt = $this->db->prepare("UPDATE user set win_turn = :turn where token = :token and win_turn is null");
+                $stmt->bindValue(':token', $token, SQLITE3_TEXT);
+                $stmt->bindValue(':turn', $turn, SQLITE3_INTEGER);
                 $result = $stmt->execute();
             } else {
                 array_push($hit_players, $this->get_user_name_by_pid($room_id, $player_id));
@@ -569,6 +608,31 @@ class DataBase
             return false;
         }
         return true;
+    }
+
+    // 全プレイヤーの情報取得
+    function get_al_players_status(int $room_id)
+    {
+        $info = [];
+        // CREATE TABLE IF NOT EXISTS user(token text primary key, last_access_time integer, room_id integer, player_id integer, is_gm integer, win integer, ready integer, username text, ready_turn integer, win_turn integer, rank integer)
+        $stmt = $this->db->prepare("SELECT player_id, username, ready, win, ready_turn, win_turn, rank from user, room_status where user.room_id = room_status.room_id and user.room_id = :room_id and user.is_gm = 0");
+        $stmt->bindValue(':room_id', $room_id, SQLITE3_INTEGER);
+        $result = $stmt->execute();
+        if ($result === false) {
+            return $info;
+        }
+        while ($row = $result->fetchArray()) {
+            $i = [];
+            $i["player_id"] = $row[0];
+            $i["username"] = $row[1];
+            $i["ready"] = $row[2];
+            $i["win"] = $row[3];
+            $i["ready_turn"] = $row[4];
+            $i["win_turn"] = $row[5];
+            $i["rank"] = $row[6];
+            array_push($info, $i);
+        }
+        return $info;
     }
 }
 
