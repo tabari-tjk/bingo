@@ -75,7 +75,7 @@ export default function Master({ token, backCallback }: { token: string, backCal
                         gameState.room_state = "StartGame";
                         changed = true;
                     }
-                    if (gameState.last_msg !== data.messages[1]) {
+                    if (data.messages && gameState.last_msg !== data.messages[1]) {
                         gameState.room_message = [...gameState.room_message, ...data.messages[0]];
                         gameState.last_msg = data.messages[1];
                         changed = true;
