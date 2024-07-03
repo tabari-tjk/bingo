@@ -38,10 +38,13 @@ type PlayerStatus = {
     win_turn: number | null;
     rank: number | null;
 };
+type PlayerStatusSortKey = keyof PlayerStatus;
 
 export default function Master({ token, backCallback }: { token: string, backCallback: Function }) {
     const [gameState, setGameState] = useState<GameState>(new GameState());
     const [player_status, setPlayerStatus] = useState<PlayerStatus[]>([]);
+    const [status_sort_key, setStatusSortKey] = useState<PlayerStatusSortKey>("rank");
+    const [status_sort_order, setStatusSortOrder] = useState<1 | -1>(1);
     const updateAllPlayerStatus = () => {
         // 全体ステータス更新
         fetch("api/master_get_all_players_status.php", {
@@ -54,37 +57,37 @@ export default function Master({ token, backCallback }: { token: string, backCal
         })
             .then(r => r.json())
             .then((data: PlayerStatus[]) => {
-                // ソート優先度
-                // 順位
-                // 初リーチターン
                 data.sort((a, b) => {
-                    if (a.ready_turn === null && b.ready_turn === null) {
+                    if (a[status_sort_key] === null && b[status_sort_key] === null) {
                         return 0;// どちらもnullなら等しいとする
                     }
-                    if (a.ready_turn === null) {
-                        return 1;// aがnullならb
+                    if (a[status_sort_key] === null) {
+                        return 1 * status_sort_order;// aがnullならb
                     }
-                    if (b.ready_turn === null) {
-                        return -1;// bがnullならa
+                    if (b[status_sort_key] === null) {
+                        return -1 * status_sort_order;// bがnullならa
                     }
-                    return a.ready_turn - b.ready_turn; // どちらもnullでないなら通常の比較
-                });
-                data.sort((a, b) => {
-                    if (a.rank === null && b.rank === null) {
-                        return 0;// どちらもnullなら等しいとする
+                    if (typeof a[status_sort_key] === "number" && typeof b[status_sort_key] === "number") {
+                        return (a[status_sort_key] - b[status_sort_key]) * status_sort_order; // どちらもnullでないなら通常の比較
                     }
-                    if (a.rank === null) {
-                        return 1;// aがnullならb
+                    if (typeof a[status_sort_key] === "string" && typeof b[status_sort_key] === "string") {
+                        return (a[status_sort_key].localeCompare(b[status_sort_key])) * status_sort_order; // どちらもnullでないなら通常の比較
                     }
-                    if (b.rank === null) {
-                        return -1;// bがnullならa
-                    }
-                    return a.rank - b.rank; // どちらもnullでないなら通常の比較
+                    return 0;
                 });
                 setPlayerStatus(data);
             })
             .catch(() => { });
     };
+    useEffect(() => { updateAllPlayerStatus(); }, [status_sort_key, status_sort_order]);
+    const setSortOrder = (key: PlayerStatusSortKey) => {
+        if (key === status_sort_key) {
+            setStatusSortOrder(status_sort_order < 0 ? 1 : -1);
+        } else {
+            setStatusSortKey(key);
+        }
+    };
+
     useEffect(() => {
         if (gameState.room_id !== null) {
             return;
@@ -248,12 +251,12 @@ export default function Master({ token, backCallback }: { token: string, backCal
             <table id="master_player_status_table">
                 <thead>
                     <tr>
-                        <th>順位</th>
-                        <th>名前</th>
-                        <th>リーチ数</th>
-                        <th>ビンゴ数</th>
-                        <th>初リーチ<wbr />ターン</th>
-                        <th>初ビンゴ<wbr />ターン</th>
+                        <th><button onClick={() => setSortOrder("rank")}>順位</button></th>
+                        <th><button onClick={() => setSortOrder("username")}>名前</button></th>
+                        <th><button onClick={() => setSortOrder("ready")}>リーチ数</button></th>
+                        <th><button onClick={() => setSortOrder("win")}>ビンゴ数</button></th>
+                        <th><button onClick={() => setSortOrder("ready_turn")}>初リーチ<wbr />ターン</button></th>
+                        <th><button onClick={() => setSortOrder("win_turn")}>初ビンゴ<wbr />ターン</button></th>
                     </tr>
                 </thead>
                 <tbody>
