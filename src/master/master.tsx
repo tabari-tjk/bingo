@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import "./master.css";
 import WakeLock from "../wakelock.tsx";
 
@@ -142,7 +142,9 @@ export default function Master({ token, backCallback }: { token: string, backCal
                 });
         }
     };
+    const choosing_dialog_ref = useRef<HTMLDialogElement | null>(null);
     const choose = () => {
+        choosing_dialog_ref?.current?.showModal();
         fetch("api/master_choose.php", {
             method: "POST",
             credentials: 'include',
@@ -157,6 +159,9 @@ export default function Master({ token, backCallback }: { token: string, backCal
                 data.win_players.forEach((p: string) => gameState.win_users.add(p));
                 gameState.win_users.forEach(n => gameState.ready_users.delete(n));
                 setGameState({ ...gameState });
+            })
+            .finally(() => {
+                choosing_dialog_ref?.current?.close();
             });
     };
 
@@ -187,6 +192,7 @@ export default function Master({ token, backCallback }: { token: string, backCal
             {
                 //gameState.room_id !== null && <Client roomId={gameState.room_id} token={token} />
             }
+            <dialog ref={choosing_dialog_ref}>loading...</dialog>
             <WakeLock />
         </div>
     );
