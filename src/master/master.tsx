@@ -32,6 +32,7 @@ class GameState {
 type PlayerStatus = {
     player_id: number;
     username: string;
+    hit: number;
     ready: number;
     win: number;
     ready_turn: number | null;
@@ -254,6 +255,7 @@ export default function Master({ token, backCallback }: { token: string, backCal
                     <tr>
                         <th><button onClick={() => setSortOrder("rank")}>順位</button></th>
                         <th><button onClick={() => setSortOrder("username")}>名前</button></th>
+                        <th><button onClick={() => setSortOrder("hit")}>ヒット数</button></th>
                         <th><button onClick={() => setSortOrder("ready")}>リーチ数</button></th>
                         <th><button onClick={() => setSortOrder("win")}>ビンゴ数</button></th>
                         <th><button onClick={() => setSortOrder("ready_turn")}>初リーチ<wbr />ターン</button></th>
@@ -265,6 +267,7 @@ export default function Master({ token, backCallback }: { token: string, backCal
                         return (<tr key={pl.player_id}>
                             <td>{pl.rank ?? "-"}</td>
                             <td>{pl.username}</td>
+                            <td>{pl.hit}</td>
                             <td>{pl.ready}</td>
                             <td>{pl.win}</td>
                             <td>{pl.ready_turn ?? "-"}</td>
