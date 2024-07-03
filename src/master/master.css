@@ -26,6 +26,7 @@
 .master_messagelist {
     overflow: visible scroll;
     min-width: 50vw;
+    min-height: 50vh;
 }
 
 .master_button {
