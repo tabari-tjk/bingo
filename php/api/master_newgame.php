@@ -14,6 +14,8 @@ if ($params === null || !array_key_exists("token", $params) || !$db->is_user_exi
 }
 $token = $params["token"];
 
+$db->clean_rooms_and_users(); // ねんのため
+
 $room_id = $db->get_user_room_id($token);
 $is_gm = $db->is_user_gm($token);
 if ($room_id !== null && $is_gm) {
