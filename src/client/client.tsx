@@ -315,7 +315,11 @@ export default function Client({ roomId, token, backCallback }: { "roomId": numb
       <WakeLock />
       <div id="client_animation_container" ref={animation_container_ref}>
         <div id="client_animation_draw" ref={client_animation_draw_ref}>
-          <img id="client_animation_draw_img" src="rdesign_09606.png" ref={client_animation_draw_img_ref} alt="ビンゴマシン" />
+          <img id="client_animation_draw_img" src="rdesign_09606.png" ref={client_animation_draw_img_ref} alt="ビンゴマシン" onClick={() => {
+            client_animation_draw_img_ref?.current?.getAnimations().forEach((animation) => {
+              animation.finish();
+            });
+          }} />
           <p id="client_draw_value" ref={client_draw_value_ref}>{client_draw_value}</p>
         </div>
         <div id="client_animation_ready" ref={client_animation_ready_ref}>
