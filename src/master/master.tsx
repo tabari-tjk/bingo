@@ -73,7 +73,7 @@ export default function Master({ token, backCallback }: { token: string, backCal
                     if (typeof a[status_sort_key] === "string" && typeof b[status_sort_key] === "string") {
                         return (a[status_sort_key].localeCompare(b[status_sort_key])) * status_sort_order; // どちらもnullでないなら通常の比較
                     }
-                    return 0;
+                    return 0; // numberでもstringでもnullでもないパターンは存在しないと思うが、念のため0を返す
                 });
                 setPlayerStatus(data);
             })
